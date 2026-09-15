@@ -66,7 +66,8 @@
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Location = new System.Drawing.Point(2, 0);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(364, 686);
             this.panel1.TabIndex = 0;
@@ -77,6 +78,7 @@
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(231, 22);
             this.textBox5.TabIndex = 9;
+            this.textBox5.UseSystemPasswordChar = true;
             // 
             // textBox4
             // 
@@ -169,7 +171,7 @@
             // panel2
             // 
             this.panel2.Controls.Add(this.dataGridView1);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(364, 0);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(772, 687);
@@ -185,6 +187,7 @@
             this.Add.TabIndex = 10;
             this.Add.Text = "Thêm";
             this.Add.UseVisualStyleBackColor = false;
+            this.Add.Click += new System.EventHandler(this.Add_Click);
             // 
             // Fix
             // 
@@ -196,6 +199,7 @@
             this.Fix.TabIndex = 11;
             this.Fix.Text = "Sửa";
             this.Fix.UseVisualStyleBackColor = false;
+            this.Fix.Click += new System.EventHandler(this.Fix_Click);
             // 
             // Delete
             // 
@@ -207,6 +211,7 @@
             this.Delete.TabIndex = 12;
             this.Delete.Text = "Xóa";
             this.Delete.UseVisualStyleBackColor = false;
+            this.Delete.Click += new System.EventHandler(this.Delete_Click);
             // 
             // dataGridView1
             // 
@@ -217,16 +222,20 @@
             this.dataGridView1.RowHeadersWidth = 51;
             this.dataGridView1.Size = new System.Drawing.Size(772, 687);
             this.dataGridView1.TabIndex = 0;
+            this.dataGridView1.AllowUserToAddRows = false;
+            this.dataGridView1.ReadOnly = true;
+            this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridView1.MultiSelect = false;
+            this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellClick);
             // 
             // AllStaff
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1136, 687);
+            this.Size = new System.Drawing.Size(1136, 687);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Name = "AllStaff";
-            this.Text = "AllStaff";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);

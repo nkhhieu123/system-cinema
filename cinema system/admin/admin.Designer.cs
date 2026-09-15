@@ -116,7 +116,7 @@
             this.exit.Name = "exit";
             this.exit.Size = new System.Drawing.Size(239, 52);
             this.exit.TabIndex = 11;
-            this.exit.Text = "Thoát";
+            this.exit.Text = "Đăng xuất";
             this.exit.UseVisualStyleBackColor = false;
             this.exit.Click += new System.EventHandler(this.exit_Click);
             // 

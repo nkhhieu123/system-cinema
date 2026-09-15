@@ -158,7 +158,6 @@ namespace cinema_system.đăng_nhập
             this.cbDay.Name = "cbDay";
             this.cbDay.Size = new System.Drawing.Size(50, 24);
             this.cbDay.TabIndex = 9;
-            for (int i = 1; i <= 31; i++) cbDay.Items.Add(i);
             // 
             // cbMonth
             // 
@@ -166,7 +165,6 @@ namespace cinema_system.đăng_nhập
             this.cbMonth.Name = "cbMonth";
             this.cbMonth.Size = new System.Drawing.Size(70, 24);
             this.cbMonth.TabIndex = 10;
-            for (int i = 1; i <= 12; i++) cbMonth.Items.Add(i);
             // 
             // cbYear
             // 
@@ -174,7 +172,6 @@ namespace cinema_system.đăng_nhập
             this.cbYear.Name = "cbYear";
             this.cbYear.Size = new System.Drawing.Size(80, 24);
             this.cbYear.TabIndex = 11;
-            for (int i = 1980; i <= 2025; i++) cbYear.Items.Add(i);
             // 
             // 
             // rbMale

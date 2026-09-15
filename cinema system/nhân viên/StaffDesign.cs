@@ -45,6 +45,7 @@ namespace cinema_system.nhân_viên
         // Sự kiện các nút menu
         private void SuatChieu_Click(object sender, EventArgs e)
         {
+            ActivateButton((Button)sender);
             panel9.Controls.Clear();
             ThemMovie them = new ThemMovie();
             them.Dock = DockStyle.Fill;
@@ -53,6 +54,7 @@ namespace cinema_system.nhân_viên
 
         private void Ve_Click(object sender, EventArgs e)
         {
+            ActivateButton((Button)sender);
             panel9.Controls.Clear();
             dat_ve ve = new dat_ve();
             ve.Dock = DockStyle.Fill;
@@ -61,6 +63,7 @@ namespace cinema_system.nhân_viên
 
         private void PhongChieu_Click(object sender, EventArgs e)
         {
+            ActivateButton((Button)sender);
             panel9.Controls.Clear();
             RoomMovieControl roomMovie = new RoomMovieControl();
             roomMovie.Dock = DockStyle.Fill;
@@ -69,6 +72,7 @@ namespace cinema_system.nhân_viên
 
         private void Phim_Click(object sender, EventArgs e)
         {
+            ActivateButton((Button)sender);
             panel9.Controls.Clear();
             addmovie movie = new addmovie();
             movie.Dock =DockStyle.Fill;
@@ -82,9 +86,7 @@ namespace cinema_system.nhân_viên
 
         private void exit_Click(object sender, EventArgs e)
         {
-            Đăng_nhập dn = new Đăng_nhập();
-            dn.Show();
-            this.Hide();
+            Program.SwitchForm(this, new Đăng_nhập());
         }
 
         //private void StaffDesign_Load(object sender, EventArgs e)

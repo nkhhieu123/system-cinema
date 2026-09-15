@@ -13,15 +13,25 @@ namespace cinema_system.đăng_nhập
 {
     public partial class UC_Đăng_ký : UserControl
     {
-        string conn = @"Data Source=shanley\sqlexpress;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
+        string conn = Db.ConnectionString;
         private string captchaText;
 
         public UC_Đăng_ký()
         {
             InitializeComponent();
+            LoadNgaySinh();
             GenerateCaptcha();
 
         }
+
+        // Đổ dữ liệu ngày / tháng / năm sinh (để ở đây vì Designer sẽ xoá code vòng lặp trong InitializeComponent)
+        private void LoadNgaySinh()
+        {
+            for (int i = 1; i <= 31; i++) cbDay.Items.Add(i);
+            for (int i = 1; i <= 12; i++) cbMonth.Items.Add(i);
+            for (int i = DateTime.Today.Year; i >= 1950; i--) cbYear.Items.Add(i);
+        }
+
         private void GenerateCaptcha()
         {
             Bitmap bmp = new Bitmap(picCaptcha.Width, picCaptcha.Height);
@@ -48,7 +58,9 @@ namespace cinema_system.đăng_nhập
                 g.DrawLine(Pens.Gray, rnd.Next(0, bmp.Width), rnd.Next(0, bmp.Height),
                                       rnd.Next(0, bmp.Width), rnd.Next(0, bmp.Height));
             }
+            g.Dispose();
 
+            picCaptcha.Image?.Dispose();
             picCaptcha.Image = bmp;
         }
 
@@ -70,7 +82,6 @@ namespace cinema_system.đăng_nhập
                 using (SqlConnection connect = new SqlConnection(conn))
                 {
                     connect.Open();
-                    MessageBox.Show("Đang ghi vào DB: " + connect.Database);
 
                     // 1️⃣ Kiểm tra tên đăng nhập đã tồn tại chưa
                     string checkUsername = "SELECT COUNT(*) FROM [dbo].[TaiKhoan] WHERE TenDangNhap = @username";
@@ -86,40 +97,30 @@ namespace cinema_system.đăng_nhập
                         }
                     }
 
-                    // 2️⃣ Sinh IDTaiKhoan tự tăng
-                    string getMaxID = "SELECT TOP 1 IDTaiKhoan FROM [dbo].[TaiKhoan] ORDER BY IDTaiKhoan DESC";
-                    string newID = "TK001";
-                    using (SqlCommand cmdGetID = new SqlCommand(getMaxID, connect))
-                    {
-                        object result = cmdGetID.ExecuteScalar();
-                        if (result != null)
-                        {
-                            string lastID = result.ToString(); // ví dụ: TK005
-                            int num = int.Parse(lastID.Substring(2)) + 1;
-                            newID = "TK" + num.ToString("D3"); // TK006
-                        }
-                    }
-
-                    // 3️⃣ Chèn tài khoản mới
+                    // 2️⃣ Chèn tài khoản mới (IDTaiKhoan là IDENTITY nên SQL Server tự sinh)
                     string insertData = @"
-                INSERT INTO [dbo].[TaiKhoan] 
-                (TenDangNhap, Pass, Email, SDT, VaiTro, NgayTao) 
-                VALUES 
-                (@username, @pass, @email, @phone, @role, @created)";
+                INSERT INTO [dbo].[TaiKhoan]
+                (TenDangNhap, Pass, HoTen, Email, SDT, VaiTro, NgayTao)
+                VALUES
+                (@username, @pass, @hoten, @email, @phone, @role, @created)";
 
                     using (SqlCommand cmd = new SqlCommand(insertData, connect))
                     {
                         cmd.Parameters.AddWithValue("@username", txtName.Text.Trim());
                         cmd.Parameters.AddWithValue("@pass", txtPassword.Text.Trim());
+                        cmd.Parameters.AddWithValue("@hoten", txtName.Text.Trim());
                         cmd.Parameters.AddWithValue("@email", txtEmail.Text.Trim());
                         cmd.Parameters.AddWithValue("@phone", txtPhone.Text.Trim());
                         cmd.Parameters.AddWithValue("@role", "User");
                         cmd.Parameters.AddWithValue("@created", DateTime.Now);
 
                         cmd.ExecuteNonQuery();
-                        MessageBox.Show("Đăng ký thành công!");
+                        MessageBox.Show("Đăng ký thành công! Hãy chuyển sang tab Đăng nhập.");
                     }
                 }
+
+                txtCaptcha.Clear();
+                GenerateCaptcha();
             }
             catch (Exception ex)
             {
@@ -133,6 +134,14 @@ namespace cinema_system.đăng_nhập
             if (cbYear.SelectedItem == null || cbMonth.SelectedItem == null || cbDay.SelectedItem == null)
             {
                 MessageBox.Show("Vui lòng chọn đầy đủ Ngày / Tháng / Năm sinh!");
+                return false;
+            }
+
+            int year = (int)cbYear.SelectedItem;
+            int month = (int)cbMonth.SelectedItem;
+            if ((int)cbDay.SelectedItem > DateTime.DaysInMonth(year, month))
+            {
+                MessageBox.Show("Ngày sinh không hợp lệ!");
                 return false;
             }
 
@@ -171,7 +180,7 @@ namespace cinema_system.đăng_nhập
                 return false;
             }
 
-            if (txtCaptcha.Text.Trim() != captchaText)
+            if (!string.Equals(txtCaptcha.Text.Trim(), captchaText, StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show("Sai captcha, vui lòng thử lại!");
                 GenerateCaptcha();

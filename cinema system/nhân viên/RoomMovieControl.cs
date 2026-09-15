@@ -13,10 +13,20 @@ namespace cinema_system.nhân_viên
 {
     public partial class RoomMovieControl : UserControl
     {
-        string connectionString = @"Data Source=shanley\sqlexpress;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
+        string connectionString = Db.ConnectionString;
         public RoomMovieControl()
         {
             InitializeComponent();
+            dgvRoomMovies.AllowUserToAddRows = false;
+            dgvRoomMovies.ReadOnly = true;
+            dgvRoomMovies.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvRoomMovies.MultiSelect = false;
+            // Cột được sinh khi control đã gắn lên form, nên ẩn cột ID sau khi bind xong
+            dgvRoomMovies.DataBindingComplete += (s, e) =>
+            {
+                if (dgvRoomMovies.Columns["ID"] != null)
+                    dgvRoomMovies.Columns["ID"].Visible = false;
+            };
             LoadRooms();
             LoadMovies();
             LoadRoomMovies();
@@ -30,9 +40,9 @@ namespace cinema_system.nhân_viên
                 SqlDataAdapter da = new SqlDataAdapter("SELECT RoomID, RoomName FROM Rooms", conn);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
-                cbRoom.DataSource = dt;
                 cbRoom.DisplayMember = "RoomName";
                 cbRoom.ValueMember = "RoomID";
+                cbRoom.DataSource = dt;
             }
         }
 
@@ -44,9 +54,9 @@ namespace cinema_system.nhân_viên
                 SqlDataAdapter da = new SqlDataAdapter("SELECT MovieID, MovieName FROM Movies", conn);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
-                cbMovie.DataSource = dt;
                 cbMovie.DisplayMember = "MovieName";
                 cbMovie.ValueMember = "MovieID";
+                cbMovie.DataSource = dt;
             }
         }
 
@@ -55,7 +65,7 @@ namespace cinema_system.nhân_viên
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = @"SELECT r.RoomName, m.MovieName 
+                string query = @"SELECT rm.ID, r.RoomName, m.MovieName
                                  FROM RoomMovies rm
                                  JOIN Rooms r ON rm.RoomID = r.RoomID
                                  JOIN Movies m ON rm.MovieID = m.MovieID";
@@ -64,6 +74,15 @@ namespace cinema_system.nhân_viên
                 da.Fill(dt);
                 dgvRoomMovies.DataSource = dt;
             }
+        }
+
+        private bool RoomMovieExists(SqlConnection conn, int roomId, int movieId)
+        {
+            SqlCommand checkCmd = new SqlCommand(
+                "SELECT COUNT(*) FROM RoomMovies WHERE RoomID=@RoomID AND MovieID=@MovieID", conn);
+            checkCmd.Parameters.AddWithValue("@RoomID", roomId);
+            checkCmd.Parameters.AddWithValue("@MovieID", movieId);
+            return (int)checkCmd.ExecuteScalar() > 0;
         }
 
         private void btnAssign_Click(object sender, EventArgs e)
@@ -82,13 +101,7 @@ namespace cinema_system.nhân_viên
                 conn.Open();
 
                 // Kiểm tra xem phòng này đã có phim gán chưa
-                SqlCommand checkCmd = new SqlCommand(
-                    "SELECT COUNT(*) FROM RoomMovies WHERE RoomID=@RoomID AND MovieID=@MovieID", conn);
-                checkCmd.Parameters.AddWithValue("@RoomID", roomId);
-                checkCmd.Parameters.AddWithValue("@MovieID", movieId);
-
-                int exists = (int)checkCmd.ExecuteScalar();
-                if (exists > 0)
+                if (RoomMovieExists(conn, roomId, movieId))
                 {
                     MessageBox.Show("Phòng này đã có phim này!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
@@ -122,22 +135,24 @@ namespace cinema_system.nhân_viên
             int roomId = Convert.ToInt32(cbRoom.SelectedValue);
             int movieId = Convert.ToInt32(cbMovie.SelectedValue);
 
-            // Lấy RoomName từ dòng đang chọn
-            string selectedRoomName = dgvRoomMovies.CurrentRow.Cells["RoomName"].Value.ToString();
+            // Sửa đúng dòng đang chọn theo ID (trước đây sửa theo RoomID nên đổi phim của cả phòng)
+            int id = Convert.ToInt32(dgvRoomMovies.CurrentRow.Cells["ID"].Value);
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
-                // Lấy RoomID từ tên phòng (hoặc bạn có thể thêm cột ẩn RoomID vào grid)
-                SqlCommand getRoomCmd = new SqlCommand("SELECT RoomID FROM Rooms WHERE RoomName=@RoomName", conn);
-                getRoomCmd.Parameters.AddWithValue("@RoomName", selectedRoomName);
-                int selectedRoomId = (int)getRoomCmd.ExecuteScalar();
+                if (RoomMovieExists(conn, roomId, movieId))
+                {
+                    MessageBox.Show("Phòng này đã có phim này!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
                 SqlCommand updateCmd = new SqlCommand(
-                    "UPDATE RoomMovies SET MovieID=@MovieID WHERE RoomID=@RoomID", conn);
-                updateCmd.Parameters.AddWithValue("@RoomID", selectedRoomId);
+                    "UPDATE RoomMovies SET RoomID=@RoomID, MovieID=@MovieID WHERE ID=@ID", conn);
+                updateCmd.Parameters.AddWithValue("@RoomID", roomId);
                 updateCmd.Parameters.AddWithValue("@MovieID", movieId);
+                updateCmd.Parameters.AddWithValue("@ID", id);
                 updateCmd.ExecuteNonQuery();
             }
 
@@ -153,6 +168,7 @@ namespace cinema_system.nhân_viên
                 return;
             }
 
+            int id = Convert.ToInt32(dgvRoomMovies.CurrentRow.Cells["ID"].Value);
             string selectedRoomName = dgvRoomMovies.CurrentRow.Cells["RoomName"].Value.ToString();
             string selectedMovieName = dgvRoomMovies.CurrentRow.Cells["MovieName"].Value.ToString();
 
@@ -168,13 +184,8 @@ namespace cinema_system.nhân_viên
                 {
                     conn.Open();
 
-                    SqlCommand deleteCmd = new SqlCommand(
-                        @"DELETE FROM RoomMovies
-                  WHERE RoomID = (SELECT RoomID FROM Rooms WHERE RoomName=@RoomName)
-                  AND MovieID = (SELECT MovieID FROM Movies WHERE MovieName=@MovieName)", conn);
-
-                    deleteCmd.Parameters.AddWithValue("@RoomName", selectedRoomName);
-                    deleteCmd.Parameters.AddWithValue("@MovieName", selectedMovieName);
+                    SqlCommand deleteCmd = new SqlCommand("DELETE FROM RoomMovies WHERE ID = @ID", conn);
+                    deleteCmd.Parameters.AddWithValue("@ID", id);
                     deleteCmd.ExecuteNonQuery();
                 }
 

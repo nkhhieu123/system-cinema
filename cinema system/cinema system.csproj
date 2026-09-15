@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,7 +54,7 @@
       <DependentUpon>admin.cs</DependentUpon>
     </Compile>
     <Compile Include="admin\AllStaff.cs">
-      <SubType>Form</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="admin\AllStaff.Designer.cs">
       <DependentUpon>AllStaff.cs</DependentUpon>
@@ -64,6 +65,7 @@
     <Compile Include="CarouselControl.Designer.cs">
       <DependentUpon>CarouselControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Db.cs" />
     <Compile Include="khách hàng\drink.cs">
       <SubType>Form</SubType>
     </Compile>

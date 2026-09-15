@@ -30,8 +30,7 @@ namespace cinema_system.khách_hàng
 
             try
             {
-                string connString = @"Data Source=.\SQLEXPRESS;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
-                using (SqlConnection conn = new SqlConnection(connString))
+                using (SqlConnection conn = new SqlConnection(Db.ConnectionString))
                 {
                     string query = "SELECT HoTen, Email, SDT, VaiTro, NgayTao FROM TaiKhoan WHERE TenDangNhap = @ten";
                     SqlCommand cmd = new SqlCommand(query, conn);

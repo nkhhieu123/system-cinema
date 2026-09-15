@@ -59,9 +59,7 @@ namespace cinema_system.khách_hàng
 
         private void dndk_Click(object sender, EventArgs e)
         {
-            Đăng_nhập dn = new Đăng_nhập();
-            dn.Show();
-            this.Hide();
+            Program.SwitchForm(this, new Đăng_nhập());
         }
 
         private void Exit_Click(object sender, EventArgs e)
@@ -69,18 +67,18 @@ namespace cinema_system.khách_hàng
             Application.Exit();
         }
 
+        // Dùng chung cho các nút giờ chiếu: mở sơ đồ ghế, đóng lại thì quay về màn hình này
         private void button1_Click(object sender, EventArgs e)
         {
-            phòng_chiếu pc = new phòng_chiếu();
-            pc.Show();
-            this.Hide();
+            using (phòng_chiếu pc = new phòng_chiếu())
+            {
+                pc.ShowDialog(this);
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            phòng_chiếu pc = new phòng_chiếu();
-            pc.Show();
-            this.Hide();
+            button1_Click(sender, e);
         }
     }
 }

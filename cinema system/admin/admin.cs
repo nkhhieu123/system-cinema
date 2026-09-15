@@ -1,4 +1,6 @@
-﻿using System;
+﻿using cinema_system.nhân_viên;
+using cinema_system.đăng_nhập;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -41,28 +43,35 @@ namespace cinema_system.admin
             indicator.BringToFront();
         }
 
+        // Hiện một UserControl vào vùng nội dung bên phải
+        private void ShowContent(Control content)
+        {
+            panel9.Controls.Clear();
+            content.Dock = DockStyle.Fill;
+            panel9.Controls.Add(content);
+        }
+
         // Sự kiện các nút menu
         private void SuatChieu_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);
-            // load nội dung UserControl vào panelContent nếu cần
+            ShowContent(new ThemMovie());
         }
 
+        // Nút "Quản lý tài khoản"
         private void Ve_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);
-        }
-
-        private void PhongChieu_Click(object sender, EventArgs e)
-        {
-            ActivateButton((Button)sender);
+            ShowContent(new AllStaff());
         }
 
         private void Phim_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);
+            ShowContent(new addmovie());
         }
 
+        // Nút "Thống kê" (chưa làm)
         private void HoannVe_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);
@@ -70,7 +79,7 @@ namespace cinema_system.admin
 
         private void exit_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            Program.SwitchForm(this, new Đăng_nhập());
         }
     }
 }

@@ -15,14 +15,15 @@ namespace cinema_system.nhân_viên
 {
     public partial class dat_ve : UserControl
     {
-        string conn = @"Data Source=shanley\sqlexpress;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
+        string conn = Db.ConnectionString;
         private DateTime startDate = DateTime.Today;
         private Button selectedButton = null;
         public dat_ve()
         {
             InitializeComponent();
             GenerateDateButtons(startDate);
-            LoadMovies(DateTime.Today);
+            // chọn sẵn ngày hôm nay
+            Btn_Click(flowLayoutPanelDates.Controls[0], EventArgs.Empty);
         }
 
         private void LoadMovies(DateTime selectedDate)
@@ -38,40 +39,57 @@ namespace cinema_system.nhân_viên
                     "SELECT MovieID, MovieName, PosterPath FROM Movies",
                     con
                 );
-                SqlDataReader reader = cmd.ExecuteReader();
 
                 List<(int, string, string)> movies = new List<(int, string, string)>();
 
-                while (reader.Read())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    int id = Convert.ToInt32(reader["MovieID"]);
-                    string name = reader["MovieName"].ToString();
-                    string poster = reader["PosterPath"].ToString();
-                    movies.Add((id, name, poster));
+                    while (reader.Read())
+                    {
+                        int id = Convert.ToInt32(reader["MovieID"]);
+                        string name = reader["MovieName"].ToString();
+                        string poster = reader["PosterPath"].ToString();
+                        movies.Add((id, name, poster));
+                    }
                 }
-                reader.Close();
 
                 // Với mỗi phim, lấy danh sách suất chiếu theo ngày
                 foreach (var movie in movies)
                 {
-                    SqlCommand cmd2 = new SqlCommand("SELECT ShowTime FROM ShowTimes WHERE MovieID = @id AND ShowDate = @date",con);
+                    SqlCommand cmd2 = new SqlCommand(
+                        "SELECT ShowTime FROM Showtimes WHERE MovieID = @id AND ShowDate = @date ORDER BY ShowTime", con);
 
                     cmd2.Parameters.AddWithValue("@id", movie.Item1);
-                    cmd2.Parameters.AddWithValue("@date", selectedDate.Date);
-
-                    SqlDataReader r2 = cmd2.ExecuteReader();
+                    cmd2.Parameters.Add("@date", SqlDbType.Date).Value = selectedDate.Date;
 
                     List<TimeSpan> times = new List<TimeSpan>();
-                    while (r2.Read())
+                    using (SqlDataReader r2 = cmd2.ExecuteReader())
                     {
-                        times.Add(r2.GetTimeSpan(0));
+                        while (r2.Read())
+                        {
+                            times.Add(r2.GetTimeSpan(0));
+                        }
                     }
-                    r2.Close();
+
+                    // Phim không có suất chiếu trong ngày thì không hiển thị
+                    if (times.Count == 0)
+                        continue;
 
                     // Tạo item phim hiển thị lên UI
                     MovieItem item = new MovieItem();
                     item.SetData(movie.Item2, movie.Item3, times); // name, poster, times
                     flowMovies.Controls.Add(item);
+                }
+
+                if (flowMovies.Controls.Count == 0)
+                {
+                    flowMovies.Controls.Add(new Label
+                    {
+                        Text = "Không có suất chiếu nào trong ngày " + selectedDate.ToString("dd/MM/yyyy"),
+                        AutoSize = true,
+                        Font = new Font("Segoe UI", 11, FontStyle.Italic),
+                        Margin = new Padding(10)
+                    });
                 }
             }
         }
@@ -114,6 +132,6 @@ namespace cinema_system.nhân_viên
             LoadMovies(selectedDate);
         }
 
-        
+
     }
 }

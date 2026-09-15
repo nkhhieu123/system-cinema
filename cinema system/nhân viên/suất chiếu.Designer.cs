@@ -67,6 +67,9 @@
             this.dgvShowtimes.RowHeadersWidth = 51;
             this.dgvShowtimes.Size = new System.Drawing.Size(695, 351);
             this.dgvShowtimes.TabIndex = 8;
+            this.dgvShowtimes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvShowtimes.MultiSelect = false;
+            this.dgvShowtimes.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvShowtimes_CellClick);
             // 
             // panel2
             // 

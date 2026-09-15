@@ -1,5 +1,6 @@
 ﻿using cinema_system.khách_hàng;
 using cinema_system.nhân_viên;
+using cinema_system.đăng_nhập;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,11 +15,12 @@ namespace cinema_system.Khách_hàng
 {
     public partial class thông_tin_khách_hàng : Form
     {
-        private string tenDangNhap;
-        public thông_tin_khách_hàng()
+        private readonly string tenDangNhap;
+        public thông_tin_khách_hàng(string tenDangNhap)
         {
-            this.tenDangNhap = tenDangNhap;
             InitializeComponent();
+            this.tenDangNhap = tenDangNhap;
+            label2.Text = "Xin chào " + tenDangNhap;
         }
 
         private void Ve_Click(object sender, EventArgs e)
@@ -43,6 +45,11 @@ namespace cinema_system.Khách_hàng
             thay_doi_thong_tin thay_Doi_Thong_Tin = new thay_doi_thong_tin(tenDangNhap);
             thay_Doi_Thong_Tin.Dock = DockStyle.Fill;
             panel9.Controls.Add(thay_Doi_Thong_Tin);
+        }
+
+        private void exit_Click(object sender, EventArgs e)
+        {
+            Program.SwitchForm(this, new Đăng_nhập());
         }
     }
 }

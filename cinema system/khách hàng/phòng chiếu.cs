@@ -13,7 +13,6 @@ namespace rạp_chiếu_phim.khách_hàng
 {
     public partial class phòng_chiếu : Form
     {
-        String connectionString = @"Data Source=DESKTOP-4H6H8K1\SQLEXPRESS;Initial Catalog=movie;Integrated Security=True";
         private List<string> gheDaChon = new List<string>();
 
         // Giá ghế mặc định
@@ -30,22 +29,7 @@ namespace rạp_chiếu_phim.khách_hàng
 
         private void LoadPrice()
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                SqlCommand cmd = new SqlCommand("SELECT Price FROM Movies WHERE MovieID = @id");
-                //cmd.Parameters.AddWithValue("@id", selectedMovieId);
-                //basePrice = (decimal)cmd.ExecuteScalar();
-                //while (reader.Read())
-                //{
-                //    string type = reader["PriceType"].ToString();
-                //    int price = Convert.ToInt32(reader["Price"]);
-                //    if (type == "Thuong") giaThuong = price;
-                //    else if (type == "VIP") giaVIP = price;
-                //    else if (type == "Sweetbox") giaSweetbox = price;
-                //}
-                //reader.Close();
-            }
+            // Hiện đang dùng giá ghế mặc định ở trên (DB chưa có bảng giá theo loại ghế)
             // Cập nhật chú thích
             legendPanel.Controls.Clear();
             AddLegendItem(Color.LightGreen, $"Ghế Thường - {giaThuong:N0} đ");

@@ -120,6 +120,7 @@
             this.button3.TabIndex = 8;
             this.button3.Text = "16:00";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button1_Click);
             // 
             // button4
             // 
@@ -130,6 +131,7 @@
             this.button4.TabIndex = 9;
             this.button4.Text = "17:30";
             this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button1_Click);
             // 
             // button5
             // 
@@ -140,6 +142,7 @@
             this.button5.TabIndex = 10;
             this.button5.Text = "20:00";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button1_Click);
             // 
             // UserDesign
             // 

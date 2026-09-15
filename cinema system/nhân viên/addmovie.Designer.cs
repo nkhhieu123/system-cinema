@@ -73,6 +73,9 @@ namespace cinema_system.nhân_viên
             this.dgvMovies.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvMovies.Size = new System.Drawing.Size(760, 300);
             this.dgvMovies.TabIndex = 1;
+            this.dgvMovies.AllowUserToAddRows = false;
+            this.dgvMovies.ReadOnly = true;
+            this.dgvMovies.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMovies_CellClick);
             // 
             // panelBottom
             // 

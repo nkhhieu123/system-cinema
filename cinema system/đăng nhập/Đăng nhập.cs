@@ -17,7 +17,7 @@ namespace cinema_system.đăng_nhập
 {
     public partial class Đăng_nhập : Form
     {
-        string conn = @"Data Source=shanley\sqlexpress;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
+        string conn = Db.ConnectionString;
         private string captchaText;
         public Đăng_nhập()
         {
@@ -32,14 +32,6 @@ namespace cinema_system.đăng_nhập
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            // kiểm tra captcha trước
-            if (txtCaptcha.Text != captchaText)
-            {
-                MessageBox.Show("Captcha sai, vui lòng thử lại!", "Thông báo");
-                GenerateCaptcha();
-                return;
-            }
-
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text.Trim();
 
@@ -49,52 +41,58 @@ namespace cinema_system.đăng_nhập
                 return;
             }
 
-            // Chuỗi kết nối
-            string connStr = "Data Source=shanley\\sqlexpress;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
-
-            using (SqlConnection con = new SqlConnection(connStr))
+            // kiểm tra captcha (không phân biệt hoa thường)
+            if (!string.Equals(txtCaptcha.Text.Trim(), captchaText, StringComparison.OrdinalIgnoreCase))
             {
-                con.Open();
+                MessageBox.Show("Captcha sai, vui lòng thử lại!", "Thông báo");
+                GenerateCaptcha();
+                return;
+            }
 
-                // Kiểm tra tài khoản trong bảng
-                string query = "SELECT VaiTro FROM TaiKhoan WHERE TenDangNhap = @username AND Pass = @password";
-                SqlCommand cmd = new SqlCommand(query, con);
-                cmd.Parameters.AddWithValue("@username", username);
-                cmd.Parameters.AddWithValue("@password", password);
-
-                object result = cmd.ExecuteScalar(); // chỉ lấy 1 giá trị đầu tiên (VaiTro)
-
-                if (result != null)
+            try
+            {
+                using (SqlConnection con = new SqlConnection(conn))
                 {
-                    string role = result.ToString();
+                    con.Open();
 
-                    MessageBox.Show("Đăng nhập thành công!", "Thông báo");
+                    // Kiểm tra tài khoản trong bảng
+                    string query = "SELECT VaiTro FROM TaiKhoan WHERE TenDangNhap = @username AND Pass = @password";
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@password", password);
+
+                    object result = cmd.ExecuteScalar(); // chỉ lấy 1 giá trị đầu tiên (VaiTro)
+
+                    if (result == null || result == DBNull.Value)
+                    {
+                        MessageBox.Show("Sai tên đăng nhập hoặc mật khẩu!", "Thông báo");
+                        GenerateCaptcha();
+                        return;
+                    }
+
+                    string role = result.ToString().Trim();
+                    Form next;
 
                     // chuyển hướng theo vai trò
                     if (role.Equals("admin", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // mở form admin
-                        admin_design fAdmin = new admin_design();
-                        fAdmin.Show();
-                    }
+                        next = new admin_design();
+                    else if (role.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                        next = new StaffDesign();
                     else if (role.Equals("user", StringComparison.OrdinalIgnoreCase))
+                        next = new thông_tin_khách_hàng(username);
+                    else
                     {
-                        // mở form user
-                        thông_tin_khách_hàng fUser = new thông_tin_khách_hàng();
-                        fUser.Show();
-                    }else if (role.Equals("staff", StringComparison.OrdinalIgnoreCase))
-                    {
-                        StaffDesign fStaff = new StaffDesign();
-                        fStaff.Show();
+                        MessageBox.Show("Vai trò tài khoản không hợp lệ: " + role, "Thông báo");
+                        return;
                     }
 
-                        this.Hide(); // ẩn form đăng nhập
+                    MessageBox.Show("Đăng nhập thành công!", "Thông báo");
+                    Program.SwitchForm(this, next);
                 }
-                else
-                {
-                    MessageBox.Show("Sai tên đăng nhập hoặc mật khẩu!", "Thông báo");
-                    GenerateCaptcha();
-                }
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show("Không kết nối được cơ sở dữ liệu: " + ex.Message, "Lỗi");
             }
         }
 
@@ -125,8 +123,11 @@ namespace cinema_system.đăng_nhập
                 g.DrawLine(Pens.Gray, rnd.Next(0, bmp.Width), rnd.Next(0, bmp.Height),
                                       rnd.Next(0, bmp.Width), rnd.Next(0, bmp.Height));
             }
+            g.Dispose();
 
+            picCaptcha.Image?.Dispose();
             picCaptcha.Image = bmp;
+            txtCaptcha.Clear();
         }
         private void tabControl_DrawItem(object sender, DrawItemEventArgs e)
         {
@@ -151,9 +152,7 @@ namespace cinema_system.đăng_nhập
 
         private void back_Click(object sender, EventArgs e)
         {
-            UserDesign ud = new UserDesign();
-            ud.Show();
-            this.Hide();
+            Program.SwitchForm(this, new UserDesign());
         }
     }
 }

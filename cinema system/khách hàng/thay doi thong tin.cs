@@ -7,7 +7,7 @@ namespace cinema_system.khách_hàng
     public partial class thay_doi_thong_tin : UserControl
     {
         private string tenDangNhap;
-        private readonly string connStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=movie;Integrated Security=True;Encrypt=False";
+        private readonly string connStr = Db.ConnectionString;
 
         public thay_doi_thong_tin(string tenDangNhap)
         {
@@ -151,7 +151,7 @@ namespace cinema_system.khách_hàng
                         string updateQuery = @"UPDATE TaiKhoan
                                                SET HoTen = @hoten,
                                                    Email = @email,
-                                                   SDT = @sdt,
+                                                   SDT = @sdt
                                                WHERE TenDangNhap = @ten";
                         using (SqlCommand cmdUpd = new SqlCommand(updateQuery, conn))
                         {

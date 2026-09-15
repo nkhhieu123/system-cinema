@@ -90,6 +90,7 @@
             this.exit.TabIndex = 10;
             this.exit.Text = "Đăng xuất";
             this.exit.UseVisualStyleBackColor = false;
+            this.exit.Click += new System.EventHandler(this.exit_Click);
             // 
             // panel2
             // 
