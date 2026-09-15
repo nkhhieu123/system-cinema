@@ -25,6 +25,8 @@ namespace cinema_system.nhân_viên
                 dgvShowtimes.Columns["ShowDate"].DefaultCellStyle.Format = "dd/MM/yyyy";
                 dgvShowtimes.Columns["ShowTime"].HeaderText = "Giờ chiếu";
                 dgvShowtimes.Columns["ShowTime"].DefaultCellStyle.Format = "hh\\:mm";
+                dgvShowtimes.Columns["KetThuc"].HeaderText = "Kết thúc";
+                dgvShowtimes.Columns["KetThuc"].DefaultCellStyle.Format = "hh\\:mm";
                 dgvShowtimes.Columns["SoVe"].HeaderText = "Vé đã bán";
                 dgvShowtimes.ClearSelection();
             };
@@ -74,13 +76,16 @@ namespace cinema_system.nhân_viên
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                SqlDataAdapter da = new SqlDataAdapter(
+                SqlCommand cmd = new SqlCommand(
                     @"SELECT s.ShowtimeID, s.MovieID, s.RoomID, m.MovieName, r.RoomName, s.ShowDate, s.ShowTime,
+                             CONVERT(time(0), DATEADD(MINUTE, ISNULL(NULLIF(m.Duration, 0), @thoiLuong), CAST(s.ShowTime AS datetime))) AS KetThuc,
                              (SELECT COUNT(*) FROM BookedSeats b WHERE b.ShowtimeID = s.ShowtimeID AND b.IsBooked = 1) AS SoVe
                       FROM Showtimes s
                       JOIN Movies m ON s.MovieID = m.MovieID
                       LEFT JOIN Rooms r ON s.RoomID = r.RoomID
                       ORDER BY s.ShowDate DESC, s.ShowTime ASC", conn);
+                cmd.Parameters.AddWithValue("@thoiLuong", AppSettings.Load(conn).ThoiLuongMacDinh);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
 
                 DataTable dt = new DataTable();
                 da.Fill(dt);
@@ -119,18 +124,6 @@ namespace cinema_system.nhân_viên
             return true;
         }
 
-        // Một phòng không chiếu 2 suất có cùng ngày và giờ bắt đầu
-        private bool RoomBusy(SqlConnection conn, int roomId, DateTime showDate, TimeSpan showTime, int excludeId)
-        {
-            SqlCommand checkCmd = new SqlCommand(
-                "SELECT COUNT(*) FROM Showtimes WHERE RoomID=@RoomID AND ShowDate=@ShowDate AND ShowTime=@ShowTime AND ShowtimeID<>@ID", conn);
-            checkCmd.Parameters.AddWithValue("@RoomID", roomId);
-            checkCmd.Parameters.Add("@ShowDate", SqlDbType.Date).Value = showDate;
-            checkCmd.Parameters.Add("@ShowTime", SqlDbType.Time).Value = showTime;
-            checkCmd.Parameters.AddWithValue("@ID", excludeId);
-            return (int)checkCmd.ExecuteScalar() > 0;
-        }
-
         // 🔹 Thêm suất chiếu mới cho phim đã có
         private void btnAddShowtime_Click(object sender, EventArgs e)
         {
@@ -146,11 +139,15 @@ namespace cinema_system.nhân_viên
             {
                 conn.Open();
 
-                // ✅ Kiểm tra phòng đã có suất chiếu vào giờ này chưa
-                if (RoomBusy(conn, roomId, showDate, showTime, -1))
+                // ✅ Kiểm tra chồng giờ với các suất khác trong phòng (thời lượng phim + thời gian dọn phòng)
+                AppSettings settings = AppSettings.Load(conn);
+                int duration = ShowtimeSchedule.GetMovieDuration(conn, movieId, settings);
+                string conflict = ShowtimeSchedule.FindConflict(conn, settings, roomId, showDate + showTime, duration, -1);
+                if (conflict != null)
                 {
-                    MessageBox.Show("Phòng này đã có suất chiếu vào ngày giờ đã chọn!", "Cảnh báo",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Phòng này bị trùng giờ với suất {conflict}.\n" +
+                                    $"(Mỗi suất cần thêm {settings.ThoiGianDonPhong} phút dọn phòng sau khi chiếu xong.)",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -257,10 +254,15 @@ namespace cinema_system.nhân_viên
                     return;
                 }
 
-                if (RoomBusy(conn, roomId, showDate, showTime, selectedShowtimeID))
+                // ✅ Kiểm tra chồng giờ với các suất khác trong phòng (thời lượng phim + thời gian dọn phòng)
+                AppSettings settings = AppSettings.Load(conn);
+                int duration = ShowtimeSchedule.GetMovieDuration(conn, movieId, settings);
+                string conflict = ShowtimeSchedule.FindConflict(conn, settings, roomId, showDate + showTime, duration, selectedShowtimeID);
+                if (conflict != null)
                 {
-                    MessageBox.Show("Phòng này đã có suất chiếu vào ngày giờ đã chọn!", "Cảnh báo",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Phòng này bị trùng giờ với suất {conflict}.\n" +
+                                    $"(Mỗi suất cần thêm {settings.ThoiGianDonPhong} phút dọn phòng sau khi chiếu xong.)",
+                        "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 

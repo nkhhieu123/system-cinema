@@ -34,19 +34,21 @@ namespace cinema_system.nhân_viên
 
                 // Chỉ lấy phim có suất chiếu trong ngày đã chọn
                 SqlCommand cmd = new SqlCommand(
-                    @"SELECT m.MovieID, m.MovieName, m.Poster, m.PosterPath
+                    @"SELECT m.MovieID, m.MovieName, m.Poster, m.PosterPath, m.Duration
                       FROM Movies m
                       WHERE EXISTS (SELECT 1 FROM Showtimes s WHERE s.MovieID = m.MovieID AND s.ShowDate = @date)
                       ORDER BY m.MovieName", con);
                 cmd.Parameters.Add("@date", SqlDbType.Date).Value = selectedDate.Date;
 
-                List<(int Id, string Name, Image Poster)> movies = new List<(int, string, Image)>();
+                int thoiLuongMacDinh = AppSettings.Load(con).ThoiLuongMacDinh;
+                List<(int Id, string Name, int? Duration, Image Poster)> movies = new List<(int, string, int?, Image)>();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         movies.Add((Convert.ToInt32(reader["MovieID"]),
                                     reader["MovieName"].ToString(),
+                                    reader["Duration"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["Duration"]),
                                     PosterImage.Load(reader["Poster"], reader["PosterPath"])));
                     }
                 }
@@ -71,14 +73,15 @@ namespace cinema_system.nhân_viên
                             {
                                 ShowtimeID = r2.GetInt32(0),
                                 Start = selectedDate.Date + r2.GetTimeSpan(1),
-                                RoomName = r2.IsDBNull(2) ? null : r2.GetString(2)
+                                RoomName = r2.IsDBNull(2) ? null : r2.GetString(2),
+                                Duration = movie.Duration > 0 ? movie.Duration.Value : thoiLuongMacDinh
                             });
                         }
                     }
 
                     // Tạo item phim hiển thị lên UI
                     MovieItem item = new MovieItem();
-                    item.SetData(movie.Name, movie.Poster, showtimes);
+                    item.SetData(movie.Name, movie.Duration, movie.Poster, showtimes);
                     flowMovies.Controls.Add(item);
                 }
 

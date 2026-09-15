@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -27,6 +28,7 @@ namespace cinema_system.nhân_viên
                 dgvMovies.Columns["Price"].HeaderText = "Giá vé";
                 dgvMovies.Columns["Price"].DefaultCellStyle.FormatProvider = new CultureInfo("vi-VN");
                 dgvMovies.Columns["Price"].DefaultCellStyle.Format = "c0";
+                dgvMovies.Columns["Duration"].HeaderText = "Thời lượng (phút)";
                 dgvMovies.Columns["CoPoster"].HeaderText = "Có poster";
             };
             LoadMovies();
@@ -39,7 +41,7 @@ namespace cinema_system.nhân_viên
                 con.Open();
                 // Không lấy dữ liệu ảnh ra bảng cho nhẹ, chỉ báo phim đã có poster chưa
                 SqlDataAdapter da = new SqlDataAdapter(
-                    @"SELECT MovieID, MovieName, Price,
+                    @"SELECT MovieID, MovieName, Price, Duration,
                              CAST(CASE WHEN Poster IS NOT NULL THEN 1 ELSE 0 END AS bit) AS CoPoster
                       FROM Movies ORDER BY MovieID", con);
                 DataTable dt = new DataTable();
@@ -48,10 +50,11 @@ namespace cinema_system.nhân_viên
             }
         }
 
-        // Kiểm tra dữ liệu nhập, trả về giá vé đã parse
-        private bool TryGetInput(out decimal price)
+        // Kiểm tra dữ liệu nhập, trả về giá vé và thời lượng
+        private bool TryGetInput(out decimal price, out int duration)
         {
             price = 0;
+            duration = (int)numDuration.Value;
             if (string.IsNullOrWhiteSpace(txtMovieName.Text))
             {
                 MessageBox.Show("Vui lòng nhập tên phim!");
@@ -64,7 +67,42 @@ namespace cinema_system.nhân_viên
                 MessageBox.Show("Giá vé không hợp lệ! (đây là giá ghế thường, ghế VIP / Sweetbox tính thêm phụ thu)");
                 return false;
             }
+
+            if (duration <= 0)
+            {
+                MessageBox.Show("Vui lòng nhập thời lượng phim (phút) để kiểm tra suất chiếu không bị chồng giờ.");
+                numDuration.Focus();
+                return false;
+            }
             return true;
+        }
+
+        // Đổi thời lượng có thể làm các suất sắp chiếu của phim bị chồng giờ với suất khác trong cùng phòng
+        private string FindScheduleConflict(SqlConnection con, int movieId, int duration)
+        {
+            AppSettings settings = AppSettings.Load(con);
+            List<(int Id, int RoomId, DateTime Start)> showtimes = new List<(int, int, DateTime)>();
+
+            SqlCommand cmd = new SqlCommand(
+                @"SELECT ShowtimeID, RoomID, ShowDate, ShowTime FROM Showtimes
+                  WHERE MovieID = @id AND RoomID IS NOT NULL AND ShowDate >= @today", con);
+            cmd.Parameters.AddWithValue("@id", movieId);
+            cmd.Parameters.Add("@today", SqlDbType.Date).Value = DateTime.Today;
+            using (SqlDataReader r = cmd.ExecuteReader())
+            {
+                while (r.Read())
+                    showtimes.Add((r.GetInt32(0), r.GetInt32(1), r.GetDateTime(2).Date + r.GetTimeSpan(3)));
+            }
+
+            foreach (var st in showtimes)
+            {
+                if (st.Start <= DateTime.Now)
+                    continue;
+                string conflict = ShowtimeSchedule.FindConflict(con, settings, st.RoomId, st.Start, duration, st.Id);
+                if (conflict != null)
+                    return $"Suất {st.Start:HH:mm dd/MM/yyyy} của phim này sẽ bị chồng giờ với {conflict}.";
+            }
+            return null;
         }
 
         private SqlParameter PosterParameter()
@@ -76,15 +114,17 @@ namespace cinema_system.nhân_viên
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (!TryGetInput(out decimal price))
+            if (!TryGetInput(out decimal price, out int duration))
                 return;
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("INSERT INTO Movies (MovieName, Price, Poster) VALUES (@name, @price, @poster)", con);
+                SqlCommand cmd = new SqlCommand(
+                    "INSERT INTO Movies (MovieName, Price, Duration, Poster) VALUES (@name, @price, @duration, @poster)", con);
                 cmd.Parameters.AddWithValue("@name", txtMovieName.Text.Trim());
                 cmd.Parameters.AddWithValue("@price", price);
+                cmd.Parameters.AddWithValue("@duration", duration);
                 cmd.Parameters.Add(PosterParameter());
                 cmd.ExecuteNonQuery();
             }
@@ -101,18 +141,28 @@ namespace cinema_system.nhân_viên
                 MessageBox.Show("Vui lòng chọn phim cần sửa!");
                 return;
             }
-            if (!TryGetInput(out decimal price))
+            if (!TryGetInput(out decimal price, out int duration))
                 return;
 
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 con.Open();
+
+                string conflict = FindScheduleConflict(con, selectedMovieId, duration);
+                if (conflict != null)
+                {
+                    MessageBox.Show(conflict + "\nHãy dời suất chiếu đó trước khi đổi thời lượng.", "Không thể sửa",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 // Đã lưu ảnh vào DB thì bỏ đường dẫn file cũ
                 SqlCommand cmd = new SqlCommand(
-                    "UPDATE Movies SET MovieName=@name, Price=@price, Poster=@poster, PosterPath=NULL WHERE MovieID=@id", con);
+                    "UPDATE Movies SET MovieName=@name, Price=@price, Duration=@duration, Poster=@poster, PosterPath=NULL WHERE MovieID=@id", con);
                 cmd.Parameters.AddWithValue("@id", selectedMovieId);
                 cmd.Parameters.AddWithValue("@name", txtMovieName.Text.Trim());
                 cmd.Parameters.AddWithValue("@price", price);
+                cmd.Parameters.AddWithValue("@duration", duration);
                 cmd.Parameters.Add(PosterParameter());
                 cmd.ExecuteNonQuery();
             }
@@ -168,6 +218,10 @@ namespace cinema_system.nhân_viên
             txtPrice.Text = priceValue == null || priceValue == DBNull.Value
                 ? ""
                 : Convert.ToDecimal(priceValue).ToString("0", CultureInfo.InvariantCulture);
+            object durationValue = row.Cells["Duration"].Value;
+            numDuration.Value = durationValue == null || durationValue == DBNull.Value
+                ? 0
+                : Math.Min(numDuration.Maximum, Convert.ToDecimal(durationValue));
 
             LoadPoster(selectedMovieId);
         }
@@ -219,6 +273,7 @@ namespace cinema_system.nhân_viên
             textBox1.Clear();
             txtMovieName.Clear();
             txtPrice.Clear();
+            numDuration.Value = 0;
             posterData = null;
             ShowPoster();
             dgvMovies.ClearSelection();

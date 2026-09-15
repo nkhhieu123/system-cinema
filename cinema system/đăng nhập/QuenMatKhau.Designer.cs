@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.lblHuongDan = new System.Windows.Forms.Label();
-            this.lblTen = new System.Windows.Forms.Label();
-            this.txtTen = new System.Windows.Forms.TextBox();
-            this.lblEmail = new System.Windows.Forms.Label();
-            this.txtEmail = new System.Windows.Forms.TextBox();
-            this.lblSDT = new System.Windows.Forms.Label();
-            this.txtSDT = new System.Windows.Forms.TextBox();
+            this.lblTaiKhoan = new System.Windows.Forms.Label();
+            this.txtTaiKhoan = new System.Windows.Forms.TextBox();
+            this.btnGuiMa = new System.Windows.Forms.Button();
+            this.lblTrangThai = new System.Windows.Forms.Label();
+            this.lblMa = new System.Windows.Forms.Label();
+            this.txtMa = new System.Windows.Forms.TextBox();
             this.lblMatKhauMoi = new System.Windows.Forms.Label();
             this.txtMatKhauMoi = new System.Windows.Forms.TextBox();
             this.lblNhapLai = new System.Windows.Forms.Label();
@@ -49,60 +49,63 @@
             this.lblHuongDan.Name = "lblHuongDan";
             this.lblHuongDan.Size = new System.Drawing.Size(430, 45);
             this.lblHuongDan.TabIndex = 0;
-            this.lblHuongDan.Text = "Nhập đúng tên đăng nhập, email và số điện thoại đã đăng ký để đặt mật khẩu mới.";
+            this.lblHuongDan.Text = "Nhập tên đăng nhập, email hoặc số điện thoại. Mã xác nhận sẽ được gửi tới email của tài khoản.";
             //
-            // lblTen
+            // lblTaiKhoan
             //
-            this.lblTen.AutoSize = true;
-            this.lblTen.Location = new System.Drawing.Point(20, 73);
-            this.lblTen.Name = "lblTen";
-            this.lblTen.Size = new System.Drawing.Size(108, 19);
-            this.lblTen.TabIndex = 1;
-            this.lblTen.Text = "Tên đăng nhập";
+            this.lblTaiKhoan.AutoSize = true;
+            this.lblTaiKhoan.Location = new System.Drawing.Point(20, 73);
+            this.lblTaiKhoan.Name = "lblTaiKhoan";
+            this.lblTaiKhoan.Size = new System.Drawing.Size(72, 19);
+            this.lblTaiKhoan.TabIndex = 1;
+            this.lblTaiKhoan.Text = "Tài khoản";
             //
-            // txtTen
+            // txtTaiKhoan
             //
-            this.txtTen.Location = new System.Drawing.Point(190, 70);
-            this.txtTen.Name = "txtTen";
-            this.txtTen.Size = new System.Drawing.Size(250, 26);
-            this.txtTen.TabIndex = 2;
+            this.txtTaiKhoan.Location = new System.Drawing.Point(190, 70);
+            this.txtTaiKhoan.Name = "txtTaiKhoan";
+            this.txtTaiKhoan.Size = new System.Drawing.Size(250, 26);
+            this.txtTaiKhoan.TabIndex = 2;
             //
-            // lblEmail
+            // btnGuiMa
             //
-            this.lblEmail.AutoSize = true;
-            this.lblEmail.Location = new System.Drawing.Point(20, 113);
-            this.lblEmail.Name = "lblEmail";
-            this.lblEmail.Size = new System.Drawing.Size(46, 19);
-            this.lblEmail.TabIndex = 3;
-            this.lblEmail.Text = "Email";
+            this.btnGuiMa.Location = new System.Drawing.Point(190, 105);
+            this.btnGuiMa.Name = "btnGuiMa";
+            this.btnGuiMa.Size = new System.Drawing.Size(170, 34);
+            this.btnGuiMa.TabIndex = 3;
+            this.btnGuiMa.Text = "Gửi mã xác nhận";
+            this.btnGuiMa.UseVisualStyleBackColor = true;
+            this.btnGuiMa.Click += new System.EventHandler(this.btnGuiMa_Click);
             //
-            // txtEmail
+            // lblTrangThai
             //
-            this.txtEmail.Location = new System.Drawing.Point(190, 110);
-            this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(250, 26);
-            this.txtEmail.TabIndex = 4;
+            this.lblTrangThai.ForeColor = System.Drawing.Color.DarkGreen;
+            this.lblTrangThai.Location = new System.Drawing.Point(20, 148);
+            this.lblTrangThai.Name = "lblTrangThai";
+            this.lblTrangThai.Size = new System.Drawing.Size(430, 40);
+            this.lblTrangThai.TabIndex = 4;
             //
-            // lblSDT
+            // lblMa
             //
-            this.lblSDT.AutoSize = true;
-            this.lblSDT.Location = new System.Drawing.Point(20, 153);
-            this.lblSDT.Name = "lblSDT";
-            this.lblSDT.Size = new System.Drawing.Size(101, 19);
-            this.lblSDT.TabIndex = 5;
-            this.lblSDT.Text = "Số điện thoại";
+            this.lblMa.AutoSize = true;
+            this.lblMa.Location = new System.Drawing.Point(20, 198);
+            this.lblMa.Name = "lblMa";
+            this.lblMa.Size = new System.Drawing.Size(97, 19);
+            this.lblMa.TabIndex = 5;
+            this.lblMa.Text = "Mã xác nhận";
             //
-            // txtSDT
+            // txtMa
             //
-            this.txtSDT.Location = new System.Drawing.Point(190, 150);
-            this.txtSDT.Name = "txtSDT";
-            this.txtSDT.Size = new System.Drawing.Size(250, 26);
-            this.txtSDT.TabIndex = 6;
+            this.txtMa.Location = new System.Drawing.Point(190, 195);
+            this.txtMa.MaxLength = 6;
+            this.txtMa.Name = "txtMa";
+            this.txtMa.Size = new System.Drawing.Size(120, 26);
+            this.txtMa.TabIndex = 6;
             //
             // lblMatKhauMoi
             //
             this.lblMatKhauMoi.AutoSize = true;
-            this.lblMatKhauMoi.Location = new System.Drawing.Point(20, 193);
+            this.lblMatKhauMoi.Location = new System.Drawing.Point(20, 238);
             this.lblMatKhauMoi.Name = "lblMatKhauMoi";
             this.lblMatKhauMoi.Size = new System.Drawing.Size(103, 19);
             this.lblMatKhauMoi.TabIndex = 7;
@@ -110,7 +113,7 @@
             //
             // txtMatKhauMoi
             //
-            this.txtMatKhauMoi.Location = new System.Drawing.Point(190, 190);
+            this.txtMatKhauMoi.Location = new System.Drawing.Point(190, 235);
             this.txtMatKhauMoi.Name = "txtMatKhauMoi";
             this.txtMatKhauMoi.Size = new System.Drawing.Size(250, 26);
             this.txtMatKhauMoi.TabIndex = 8;
@@ -119,7 +122,7 @@
             // lblNhapLai
             //
             this.lblNhapLai.AutoSize = true;
-            this.lblNhapLai.Location = new System.Drawing.Point(20, 233);
+            this.lblNhapLai.Location = new System.Drawing.Point(20, 278);
             this.lblNhapLai.Name = "lblNhapLai";
             this.lblNhapLai.Size = new System.Drawing.Size(137, 19);
             this.lblNhapLai.TabIndex = 9;
@@ -127,7 +130,7 @@
             //
             // txtNhapLai
             //
-            this.txtNhapLai.Location = new System.Drawing.Point(190, 230);
+            this.txtNhapLai.Location = new System.Drawing.Point(190, 275);
             this.txtNhapLai.Name = "txtNhapLai";
             this.txtNhapLai.Size = new System.Drawing.Size(250, 26);
             this.txtNhapLai.TabIndex = 10;
@@ -138,7 +141,7 @@
             this.btnDoiMatKhau.BackColor = System.Drawing.Color.Red;
             this.btnDoiMatKhau.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDoiMatKhau.ForeColor = System.Drawing.Color.White;
-            this.btnDoiMatKhau.Location = new System.Drawing.Point(190, 280);
+            this.btnDoiMatKhau.Location = new System.Drawing.Point(190, 325);
             this.btnDoiMatKhau.Name = "btnDoiMatKhau";
             this.btnDoiMatKhau.Size = new System.Drawing.Size(150, 40);
             this.btnDoiMatKhau.TabIndex = 11;
@@ -148,7 +151,7 @@
             //
             // btnHuy
             //
-            this.btnHuy.Location = new System.Drawing.Point(350, 280);
+            this.btnHuy.Location = new System.Drawing.Point(350, 325);
             this.btnHuy.Name = "btnHuy";
             this.btnHuy.Size = new System.Drawing.Size(90, 40);
             this.btnHuy.TabIndex = 12;
@@ -158,19 +161,18 @@
             //
             // QuenMatKhau
             //
-            this.AcceptButton = this.btnDoiMatKhau;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.btnHuy;
-            this.ClientSize = new System.Drawing.Size(464, 340);
+            this.ClientSize = new System.Drawing.Size(464, 385);
             this.Controls.Add(this.lblHuongDan);
-            this.Controls.Add(this.lblTen);
-            this.Controls.Add(this.txtTen);
-            this.Controls.Add(this.lblEmail);
-            this.Controls.Add(this.txtEmail);
-            this.Controls.Add(this.lblSDT);
-            this.Controls.Add(this.txtSDT);
+            this.Controls.Add(this.lblTaiKhoan);
+            this.Controls.Add(this.txtTaiKhoan);
+            this.Controls.Add(this.btnGuiMa);
+            this.Controls.Add(this.lblTrangThai);
+            this.Controls.Add(this.lblMa);
+            this.Controls.Add(this.txtMa);
             this.Controls.Add(this.lblMatKhauMoi);
             this.Controls.Add(this.txtMatKhauMoi);
             this.Controls.Add(this.lblNhapLai);
@@ -184,6 +186,7 @@
             this.Name = "QuenMatKhau";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Tìm lại mật khẩu";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.QuenMatKhau_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -192,12 +195,12 @@
         #endregion
 
         private System.Windows.Forms.Label lblHuongDan;
-        private System.Windows.Forms.Label lblTen;
-        private System.Windows.Forms.TextBox txtTen;
-        private System.Windows.Forms.Label lblEmail;
-        private System.Windows.Forms.TextBox txtEmail;
-        private System.Windows.Forms.Label lblSDT;
-        private System.Windows.Forms.TextBox txtSDT;
+        private System.Windows.Forms.Label lblTaiKhoan;
+        private System.Windows.Forms.TextBox txtTaiKhoan;
+        private System.Windows.Forms.Button btnGuiMa;
+        private System.Windows.Forms.Label lblTrangThai;
+        private System.Windows.Forms.Label lblMa;
+        private System.Windows.Forms.TextBox txtMa;
         private System.Windows.Forms.Label lblMatKhauMoi;
         private System.Windows.Forms.TextBox txtMatKhauMoi;
         private System.Windows.Forms.Label lblNhapLai;

@@ -73,7 +73,7 @@
             this.lblGhiChu.Name = "lblGhiChu";
             this.lblGhiChu.Size = new System.Drawing.Size(560, 19);
             this.lblGhiChu.TabIndex = 1;
-            this.lblGhiChu.Text = "Chỉ hoàn được vé của suất chiếu chưa bắt đầu. Giữ Ctrl để chọn nhiều vé.";
+            this.lblGhiChu.Text = "Hoàn vé trước giờ chiếu, có tính phí hoàn. Giữ Ctrl để chọn nhiều vé.";
             //
             // lblTimKiem
             //

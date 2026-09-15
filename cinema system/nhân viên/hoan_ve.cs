@@ -12,10 +12,13 @@ namespace cinema_system.nhân_viên
     // Vé hoàn không bị xóa mà đánh dấu IsBooked = 0: ghế được mở bán lại, dữ liệu vẫn giữ để thống kê.
     public partial class hoan_ve : UserControl
     {
-        // Chỉ hoàn được vé của suất chiếu chưa bắt đầu
-        private const string SuatChuaChieu = "(s.ShowDate > @homNay OR (s.ShowDate = @homNay AND s.ShowTime > @gio))";
+        private const string GioBatDau = "(CAST(s.ShowDate AS datetime) + CAST(s.ShowTime AS datetime))";
+        private const string SuatChuaChieu = GioBatDau + " > @now";
+        // Chỉ hoàn được trước giờ chiếu ít nhất HoanVeTruocPhut phút (Cài đặt)
+        private const string ConHanHoan = GioBatDau + " > @hanHoan";
 
         private readonly bool chiVeCuaToi;
+        private AppSettings settings = new AppSettings();
 
         public hoan_ve(bool chiVeCuaToi)
         {
@@ -62,18 +65,20 @@ namespace cinema_system.nhân_viên
             LoadVe();
         }
 
-        private static void AddTimeParameters(SqlCommand cmd)
+        private void AddTimeParameters(SqlCommand cmd)
         {
             DateTime now = DateTime.Now;
-            cmd.Parameters.Add("@homNay", SqlDbType.Date).Value = now.Date;
-            cmd.Parameters.Add("@gio", SqlDbType.Time).Value = now.TimeOfDay;
+            cmd.Parameters.Add("@now", SqlDbType.DateTime).Value = now;
+            cmd.Parameters.Add("@hanHoan", SqlDbType.DateTime).Value = now.AddMinutes(settings.HoanVeTruocPhut);
         }
 
         private void LoadVe()
         {
             string sql = @"SELECT b.BookingID, m.MovieName, r.RoomName, s.ShowDate, s.ShowTime, se.SeatName, b.Price,
                                   tk.TenDangNhap, tk.SDT, b.BookedAt,
-                                  CASE WHEN " + SuatChuaChieu + @" THEN N'Chưa chiếu' ELSE N'Đã chiếu' END AS TrangThai
+                                  CASE WHEN " + ConHanHoan + @" THEN N'Có thể hoàn'
+                                       WHEN " + SuatChuaChieu + @" THEN N'Quá hạn hoàn'
+                                       ELSE N'Đã chiếu' END AS TrangThai
                            FROM BookedSeats b
                            JOIN Showtimes s ON b.ShowtimeID = s.ShowtimeID
                            JOIN Movies m ON s.MovieID = m.MovieID
@@ -84,6 +89,11 @@ namespace cinema_system.nhân_viên
 
             using (SqlConnection conn = new SqlConnection(Db.ConnectionString))
             {
+                conn.Open();
+                settings = AppSettings.Load(conn);
+                lblGhiChu.Text = $"Hoàn vé trước giờ chiếu ít nhất {settings.HoanVeTruocPhut} phút, phí hoàn {settings.PhiHoanVe:0.##}% giá vé. " +
+                                 "Giữ Ctrl để chọn nhiều vé.";
+
                 SqlCommand cmd = new SqlCommand { Connection = conn };
                 AddTimeParameters(cmd);
 
@@ -131,8 +141,10 @@ namespace cinema_system.nhân_viên
             }
 
             decimal tong = rows.Sum(r => r.Cells["Price"].Value == DBNull.Value ? 0 : Convert.ToDecimal(r.Cells["Price"].Value));
-            if (MessageBox.Show($"Hoàn {rows.Count} vé, số tiền trả lại {tong:N0} đ?", "Xác nhận hoàn vé",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            decimal phi = Math.Round(tong * settings.PhiHoanVe / 100, 0);
+            if (MessageBox.Show($"Hoàn {rows.Count} vé.\nTổng giá vé: {tong:N0} đ\n" +
+                                $"Phí hoàn ({settings.PhiHoanVe:0.##}%): {phi:N0} đ\nSố tiền trả lại: {tong - phi:N0} đ\n\nXác nhận hoàn vé?",
+                    "Xác nhận hoàn vé", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
             int thanhCong = 0;
@@ -141,12 +153,15 @@ namespace cinema_system.nhân_viên
                 conn.Open();
                 foreach (DataGridViewRow row in rows)
                 {
+                    // Giữ lại phí hoàn, lưu số tiền đã trả khách để thống kê
                     SqlCommand cmd = new SqlCommand(
-                        @"UPDATE b SET b.IsBooked = 0
+                        @"UPDATE b SET b.IsBooked = 0, b.RefundedAt = GETDATE(),
+                                 b.RefundAmount = ROUND(b.Price * (100 - @phi) / 100, 0)
                           FROM BookedSeats b JOIN Showtimes s ON b.ShowtimeID = s.ShowtimeID
-                          WHERE b.BookingID = @id AND b.IsBooked = 1 AND " + SuatChuaChieu +
+                          WHERE b.BookingID = @id AND b.IsBooked = 1 AND " + ConHanHoan +
                         (chiVeCuaToi ? " AND b.IDTaiKhoan = @tk" : ""), conn);
                     cmd.Parameters.AddWithValue("@id", Convert.ToInt32(row.Cells["BookingID"].Value));
+                    cmd.Parameters.AddWithValue("@phi", settings.PhiHoanVe);
                     AddTimeParameters(cmd);
                     if (chiVeCuaToi)
                         cmd.Parameters.AddWithValue("@tk", (object)Session.IDTaiKhoan ?? DBNull.Value);
@@ -157,7 +172,8 @@ namespace cinema_system.nhân_viên
             if (thanhCong == rows.Count)
                 MessageBox.Show($"Đã hoàn {thanhCong} vé.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             else
-                MessageBox.Show($"Đã hoàn {thanhCong}/{rows.Count} vé. Các vé còn lại không hoàn được vì suất chiếu đã bắt đầu hoặc vé đã được hoàn trước đó.",
+                MessageBox.Show($"Đã hoàn {thanhCong}/{rows.Count} vé. Các vé còn lại không hoàn được vì đã quá hạn hoàn " +
+                                $"(trước giờ chiếu {settings.HoanVeTruocPhut} phút) hoặc vé đã được hoàn trước đó.",
                     "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             LoadVe();

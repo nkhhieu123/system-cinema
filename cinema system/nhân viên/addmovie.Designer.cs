@@ -33,10 +33,13 @@ namespace cinema_system.nhân_viên
             this.btnClear = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.numDuration = new System.Windows.Forms.NumericUpDown();
             this.panelTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvMovies)).BeginInit();
             this.panelBottom.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPoster)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDuration)).BeginInit();
             this.SuspendLayout();
             // 
             // panelTop
@@ -80,6 +83,8 @@ namespace cinema_system.nhân_viên
             // panelBottom
             // 
             this.panelBottom.Controls.Add(this.label3);
+            this.panelBottom.Controls.Add(this.label4);
+            this.panelBottom.Controls.Add(this.numDuration);
             this.panelBottom.Controls.Add(this.textBox1);
             this.panelBottom.Controls.Add(this.label2);
             this.panelBottom.Controls.Add(this.label1);
@@ -230,6 +235,21 @@ namespace cinema_system.nhân_viên
             this.label3.Size = new System.Drawing.Size(44, 26);
             this.label3.TabIndex = 13;
             this.label3.Text = "Giá";
+            // label4
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(270, 112);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(165, 26);
+            this.label4.TabIndex = 14;
+            this.label4.Text = "Thời lượng (phút)";
+            // numDuration
+            this.numDuration.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.numDuration.Location = new System.Drawing.Point(445, 110);
+            this.numDuration.Maximum = new decimal(new int[] { 600, 0, 0, 0 });
+            this.numDuration.Name = "numDuration";
+            this.numDuration.Size = new System.Drawing.Size(90, 34);
+            this.numDuration.TabIndex = 2;
             // 
             // addmovie
             // 
@@ -244,6 +264,7 @@ namespace cinema_system.nhân_viên
             this.panelBottom.ResumeLayout(false);
             this.panelBottom.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPoster)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numDuration)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -258,6 +279,8 @@ namespace cinema_system.nhân_viên
         private System.Windows.Forms.TextBox txtPrice;
         private System.Windows.Forms.Button btnImport;
         private System.Windows.Forms.PictureBox picPoster;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown numDuration;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.Button btnDelete;

@@ -11,15 +11,20 @@ namespace cinema_system.nhân_viên
         // Sơ đồ ghế mặc định: 10 hàng x 12 ghế; hàng A-C thường, D-I VIP, J sweetbox
         public const int SeatRows = 10;
         public const int SeatColumns = 12;
+        public const int MaxSeatRows = 26;    // tên hàng A..Z
+        public const int MaxSeatColumns = 30;
         public const string SeatThuong = "Thuong";
         public const string SeatVIP = "VIP";
         public const string SeatSweetbox = "Sweetbox";
+        public const string SeatKhongDung = "KhongDung"; // lối đi / ghế hỏng: không hiển thị, không bán
 
         private int selectedRoomId = -1;
 
         public QuanLyPhong()
         {
             InitializeComponent();
+            numHang.Value = SeatRows;
+            numCot.Value = SeatColumns;
             dgvRooms.DataBindingComplete += (s, e) =>
             {
                 if (dgvRooms.Columns["RoomID"] == null)
@@ -43,23 +48,48 @@ namespace cinema_system.nhân_viên
 
             using (SqlTransaction tran = conn.BeginTransaction())
             {
-                for (int i = 0; i < SeatRows; i++)
-                {
-                    string type = i < 3 ? SeatThuong : i < 9 ? SeatVIP : SeatSweetbox;
-                    for (int j = 1; j <= SeatColumns; j++)
-                    {
-                        // Kiểm tra lại trong transaction phòng khi 2 máy cùng tạo ghế một lúc
-                        SqlCommand insert = new SqlCommand(
-                            @"IF NOT EXISTS (SELECT 1 FROM Seats WITH (UPDLOCK, HOLDLOCK) WHERE RoomID = @room AND SeatName = @name)
-                                  INSERT INTO Seats (RoomID, SeatName, SeatType) VALUES (@room, @name, @type)", conn, tran);
-                        insert.Parameters.AddWithValue("@room", roomId);
-                        insert.Parameters.AddWithValue("@name", $"{(char)('A' + i)}{j}");
-                        insert.Parameters.AddWithValue("@type", type);
-                        insert.ExecuteNonQuery();
-                    }
-                }
+                CreateSeats(conn, tran, roomId, SeatRows, SeatColumns);
                 tran.Commit();
             }
+        }
+
+        // Loại ghế mặc định theo hàng: ~30% hàng đầu thường, hàng cuối sweetbox (phòng từ 4 hàng), còn lại VIP
+        public static string DefaultSeatType(int row, int rows)
+        {
+            if (rows >= 4 && row == rows - 1)
+                return SeatSweetbox;
+            return row < Math.Max(1, rows * 3 / 10) ? SeatThuong : SeatVIP;
+        }
+
+        public static void CreateSeats(SqlConnection conn, SqlTransaction tran, int roomId, int rows, int columns)
+        {
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 1; j <= columns; j++)
+                {
+                    // Kiểm tra lại trong transaction phòng khi 2 máy cùng tạo ghế một lúc
+                    SqlCommand insert = new SqlCommand(
+                        @"IF NOT EXISTS (SELECT 1 FROM Seats WITH (UPDLOCK, HOLDLOCK) WHERE RoomID = @room AND SeatName = @name)
+                              INSERT INTO Seats (RoomID, SeatName, SeatType) VALUES (@room, @name, @type)", conn, tran);
+                    insert.Parameters.AddWithValue("@room", roomId);
+                    insert.Parameters.AddWithValue("@name", $"{(char)('A' + i)}{j}");
+                    insert.Parameters.AddWithValue("@type", DefaultSeatType(i, rows));
+                    insert.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Tên ghế dạng "A1": chữ cái là hàng, số là cột (bắt đầu từ 0)
+        public static bool TryParseSeatName(string name, out int row, out int column)
+        {
+            row = column = 0;
+            if (string.IsNullOrEmpty(name) || name.Length < 2 || !char.IsLetter(name[0])
+                || !int.TryParse(name.Substring(1), out int number) || number < 1)
+                return false;
+
+            row = char.ToUpperInvariant(name[0]) - 'A';
+            column = number - 1;
+            return row >= 0 && row < MaxSeatRows;
         }
 
         private void LoadRooms()
@@ -68,7 +98,7 @@ namespace cinema_system.nhân_viên
             {
                 SqlDataAdapter da = new SqlDataAdapter(
                     @"SELECT r.RoomID, r.RoomName,
-                             (SELECT COUNT(*) FROM Seats s WHERE s.RoomID = r.RoomID) AS SoGhe,
+                             (SELECT COUNT(*) FROM Seats s WHERE s.RoomID = r.RoomID AND ISNULL(s.SeatType, '') <> N'KhongDung') AS SoGhe,
                              (SELECT COUNT(*) FROM Showtimes st WHERE st.RoomID = r.RoomID) AS SoSuatChieu
                       FROM Rooms r ORDER BY r.RoomID", conn);
                 DataTable dt = new DataTable();
@@ -117,10 +147,15 @@ namespace cinema_system.nhân_viên
                 cmd.Parameters.AddWithValue("@name", name);
                 int roomId = (int)cmd.ExecuteScalar();
 
-                EnsureDefaultSeats(conn, roomId);
+                using (SqlTransaction tran = conn.BeginTransaction())
+                {
+                    CreateSeats(conn, tran, roomId, (int)numHang.Value, (int)numCot.Value);
+                    tran.Commit();
+                }
             }
 
-            MessageBox.Show($"Đã thêm phòng (sơ đồ {SeatRows} hàng x {SeatColumns} ghế).");
+            MessageBox.Show($"Đã thêm phòng với sơ đồ {numHang.Value} hàng x {numCot.Value} ghế.\n" +
+                            "Bấm \"Sơ đồ ghế\" để đổi loại ghế hoặc đánh dấu lối đi.");
             LoadRooms();
             ClearForm();
         }
@@ -208,6 +243,21 @@ namespace cinema_system.nhân_viên
             MessageBox.Show("Xóa phòng thành công!");
             LoadRooms();
             ClearForm();
+        }
+
+        private void btnSoDo_Click(object sender, EventArgs e)
+        {
+            if (selectedRoomId < 0)
+            {
+                MessageBox.Show("Hãy chọn phòng cần chỉnh sơ đồ ghế.");
+                return;
+            }
+
+            using (SoDoGhe f = new SoDoGhe(selectedRoomId, txtTenPhong.Text.Trim()))
+            {
+                f.ShowDialog(this);
+            }
+            LoadRooms();
         }
 
         private void dgvRooms_CellClick(object sender, DataGridViewCellEventArgs e)

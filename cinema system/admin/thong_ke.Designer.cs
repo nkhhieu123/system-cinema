@@ -40,6 +40,8 @@
             this.lblDoanhThu = new System.Windows.Forms.Label();
             this.lblVeHoan = new System.Windows.Forms.Label();
             this.lblSuatChieu = new System.Windows.Forms.Label();
+            this.lblDoUong = new System.Windows.Forms.Label();
+            this.lblTongDoanhThu = new System.Windows.Forms.Label();
             this.dgvThongKe = new System.Windows.Forms.DataGridView();
             this.panelTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvThongKe)).BeginInit();
@@ -58,10 +60,12 @@
             this.panelTop.Controls.Add(this.lblDoanhThu);
             this.panelTop.Controls.Add(this.lblVeHoan);
             this.panelTop.Controls.Add(this.lblSuatChieu);
+            this.panelTop.Controls.Add(this.lblDoUong);
+            this.panelTop.Controls.Add(this.lblTongDoanhThu);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(0, 0);
             this.panelTop.Name = "panelTop";
-            this.panelTop.Size = new System.Drawing.Size(1000, 150);
+            this.panelTop.Size = new System.Drawing.Size(1000, 215);
             this.panelTop.TabIndex = 0;
             //
             // lblTitle
@@ -115,7 +119,7 @@
             this.cbNhom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbNhom.Location = new System.Drawing.Point(490, 53);
             this.cbNhom.Name = "cbNhom";
-            this.cbNhom.Size = new System.Drawing.Size(140, 27);
+            this.cbNhom.Size = new System.Drawing.Size(190, 27);
             this.cbNhom.TabIndex = 5;
             //
             // btnXem
@@ -123,7 +127,7 @@
             this.btnXem.BackColor = System.Drawing.Color.Firebrick;
             this.btnXem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnXem.ForeColor = System.Drawing.Color.White;
-            this.btnXem.Location = new System.Drawing.Point(650, 48);
+            this.btnXem.Location = new System.Drawing.Point(700, 48);
             this.btnXem.Name = "btnXem";
             this.btnXem.Size = new System.Drawing.Size(110, 36);
             this.btnXem.TabIndex = 6;
@@ -135,7 +139,7 @@
             //
             this.lblSoVe.AutoSize = true;
             this.lblSoVe.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSoVe.Location = new System.Drawing.Point(17, 105);
+            this.lblSoVe.Location = new System.Drawing.Point(17, 100);
             this.lblSoVe.Name = "lblSoVe";
             this.lblSoVe.Size = new System.Drawing.Size(100, 25);
             this.lblSoVe.TabIndex = 7;
@@ -146,7 +150,7 @@
             this.lblDoanhThu.AutoSize = true;
             this.lblDoanhThu.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDoanhThu.ForeColor = System.Drawing.Color.Firebrick;
-            this.lblDoanhThu.Location = new System.Drawing.Point(220, 105);
+            this.lblDoanhThu.Location = new System.Drawing.Point(17, 135);
             this.lblDoanhThu.Name = "lblDoanhThu";
             this.lblDoanhThu.Size = new System.Drawing.Size(120, 25);
             this.lblDoanhThu.TabIndex = 8;
@@ -156,7 +160,7 @@
             //
             this.lblVeHoan.AutoSize = true;
             this.lblVeHoan.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblVeHoan.Location = new System.Drawing.Point(500, 105);
+            this.lblVeHoan.Location = new System.Drawing.Point(380, 100);
             this.lblVeHoan.Name = "lblVeHoan";
             this.lblVeHoan.Size = new System.Drawing.Size(110, 25);
             this.lblVeHoan.TabIndex = 9;
@@ -166,11 +170,32 @@
             //
             this.lblSuatChieu.AutoSize = true;
             this.lblSuatChieu.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSuatChieu.Location = new System.Drawing.Point(700, 105);
+            this.lblSuatChieu.Location = new System.Drawing.Point(17, 170);
             this.lblSuatChieu.Name = "lblSuatChieu";
             this.lblSuatChieu.Size = new System.Drawing.Size(110, 25);
             this.lblSuatChieu.TabIndex = 10;
             this.lblSuatChieu.Text = "Suất chiếu: 0";
+            //
+            // lblDoUong
+            //
+            this.lblDoUong.AutoSize = true;
+            this.lblDoUong.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDoUong.Location = new System.Drawing.Point(380, 135);
+            this.lblDoUong.Name = "lblDoUong";
+            this.lblDoUong.Size = new System.Drawing.Size(110, 25);
+            this.lblDoUong.TabIndex = 11;
+            this.lblDoUong.Text = "Bắp nước: 0 đ";
+            //
+            // lblTongDoanhThu
+            //
+            this.lblTongDoanhThu.AutoSize = true;
+            this.lblTongDoanhThu.Font = new System.Drawing.Font("Times New Roman", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTongDoanhThu.ForeColor = System.Drawing.Color.Firebrick;
+            this.lblTongDoanhThu.Location = new System.Drawing.Point(380, 168);
+            this.lblTongDoanhThu.Name = "lblTongDoanhThu";
+            this.lblTongDoanhThu.Size = new System.Drawing.Size(200, 27);
+            this.lblTongDoanhThu.TabIndex = 12;
+            this.lblTongDoanhThu.Text = "TỔNG DOANH THU: 0 đ";
             //
             // dgvThongKe
             //
@@ -180,7 +205,7 @@
             this.dgvThongKe.BackgroundColor = System.Drawing.Color.White;
             this.dgvThongKe.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvThongKe.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvThongKe.Location = new System.Drawing.Point(0, 150);
+            this.dgvThongKe.Location = new System.Drawing.Point(0, 215);
             this.dgvThongKe.MultiSelect = false;
             this.dgvThongKe.Name = "dgvThongKe";
             this.dgvThongKe.ReadOnly = true;
@@ -220,6 +245,8 @@
         private System.Windows.Forms.Label lblDoanhThu;
         private System.Windows.Forms.Label lblVeHoan;
         private System.Windows.Forms.Label lblSuatChieu;
+        private System.Windows.Forms.Label lblDoUong;
+        private System.Windows.Forms.Label lblTongDoanhThu;
         private System.Windows.Forms.DataGridView dgvThongKe;
     }
 }

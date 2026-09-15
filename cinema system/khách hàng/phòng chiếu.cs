@@ -12,10 +12,8 @@ namespace rạp_chiếu_phim.khách_hàng
     // Sơ đồ ghế của một suất chiếu: chọn ghế, tính tiền và lưu vé vào bảng BookedSeats
     public partial class phòng_chiếu : Form
     {
-        // Giá ghế thường = giá vé của phim; ghế VIP / Sweetbox cộng thêm phụ thu
-        private const decimal PhuThuVIP = 30000;
-        private const decimal PhuThuSweetbox = 80000;
-        private const decimal GiaMacDinh = 70000; // phim chưa nhập giá vé
+        // Giá ghế thường = giá vé của phim; phụ thu VIP / Sweetbox lấy từ Cài đặt (admin chỉnh được)
+        private readonly AppSettings settings;
 
         private static readonly Color MauDangChon = Color.Brown;
         private static readonly Color MauDaDat = Color.Gray;
@@ -30,7 +28,7 @@ namespace rạp_chiếu_phim.khách_hàng
         private readonly int showtimeId;
         private int roomId;
         private DateTime batDau;
-        private decimal giaThuong = GiaMacDinh;
+        private decimal giaThuong;
 
         // Các nút ghế đang chọn, theo thứ tự bấm
         private readonly List<Button> gheDaChon = new List<Button>();
@@ -39,6 +37,15 @@ namespace rạp_chiếu_phim.khách_hàng
         {
             InitializeComponent();
             this.showtimeId = showtimeId;
+            settings = AppSettings.Load();
+            giaThuong = settings.GiaVeMacDinh;
+
+            // Khách chưa đăng nhập: xem được ghế trống, bấm nút để chuyển sang đăng nhập
+            if (Session.IDTaiKhoan == null)
+            {
+                btnNext.Text = "ĐĂNG NHẬP ĐỂ ĐẶT VÉ";
+                btnNext.Width = 230;
+            }
 
             // Danh sách ghế dài thì cắt bớt, không đè lên phần chú thích
             lblDanhSachGhe.AutoSize = false;
@@ -85,9 +92,9 @@ namespace rạp_chiếu_phim.khách_hàng
         private decimal GiaGhe(string loai)
         {
             if (loai == QuanLyPhong.SeatVIP)
-                return giaThuong + PhuThuVIP;
+                return giaThuong + settings.PhuThuVIP;
             if (loai == QuanLyPhong.SeatSweetbox)
-                return giaThuong + PhuThuSweetbox;
+                return giaThuong + settings.PhuThuSweetbox;
             return giaThuong;
         }
 
@@ -129,19 +136,6 @@ namespace rạp_chiếu_phim.khách_hàng
             item.Controls.Add(colorBox);
             item.Controls.Add(lbl);
             this.legendPanel.Controls.Add(item);
-        }
-
-        // Tên ghế dạng "A1": chữ cái là hàng, số là cột
-        private static bool ViTriGhe(string ten, out int hang, out int cot)
-        {
-            hang = cot = 0;
-            if (string.IsNullOrEmpty(ten) || ten.Length < 2 || !char.IsLetter(ten[0])
-                || !int.TryParse(ten.Substring(1), out int so) || so < 1)
-                return false;
-
-            hang = char.ToUpperInvariant(ten[0]) - 'A';
-            cot = so - 1;
-            return hang >= 0 && hang < 26;
         }
 
         private void VeSoDoGhe()
@@ -187,7 +181,13 @@ namespace rạp_chiếu_phim.khách_hàng
                             Loai = r.IsDBNull(2) ? QuanLyPhong.SeatThuong : r.GetString(2)
                         };
 
-                        if (!ViTriGhe(ghe.Ten, out int hang, out int cot))
+                        if (ghe.Loai == QuanLyPhong.SeatKhongDung)
+                        {
+                            index++;
+                            continue; // lối đi / ghế không sử dụng: để trống
+                        }
+
+                        if (!QuanLyPhong.TryParseSeatName(ghe.Ten, out int hang, out int cot))
                         {
                             hang = index / QuanLyPhong.SeatColumns;
                             cot = index % QuanLyPhong.SeatColumns;
@@ -252,7 +252,7 @@ namespace rạp_chiếu_phim.khách_hàng
                 ? $"Ghế ({ds.Count}): " + string.Join(", ", ds.Select(g => g.Ten))
                 : "Ghế: (chưa chọn)";
             lblTongTien.Text = $"Tổng tiền: {ds.Sum(g => GiaGhe(g.Loai)):N0} đ";
-            btnNext.Enabled = ds.Count > 0;
+            btnNext.Enabled = ds.Count > 0 || Session.IDTaiKhoan == null;
         }
 
         private void btnPrev_Click(object sender, EventArgs e)
@@ -263,15 +263,17 @@ namespace rạp_chiếu_phim.khách_hàng
         // Đặt vé: lưu từng ghế vào BookedSeats trong một transaction
         private void btnNext_Click(object sender, EventArgs e)
         {
+            if (Session.IDTaiKhoan == null)
+            {
+                DialogResult = DialogResult.Retry; // nơi mở form sẽ chuyển sang màn hình đăng nhập
+                Close();
+                return;
+            }
+
             List<Ghe> ds = GheDangChon();
             if (ds.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn ít nhất một ghế.", "Thông báo");
-                return;
-            }
-            if (Session.IDTaiKhoan == null)
-            {
-                MessageBox.Show("Vui lòng đăng nhập để đặt vé.", "Thông báo");
                 return;
             }
             if (batDau <= DateTime.Now)
@@ -337,8 +339,16 @@ namespace rạp_chiếu_phim.khách_hàng
                 return;
             }
 
-            MessageBox.Show($"Đặt vé thành công!\nGhế: {danhSach}\nTổng tiền: {tong:N0} đ", "Thành công",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (MessageBox.Show($"Đặt vé thành công!\nGhế: {danhSach}\nTổng tiền: {tong:N0} đ\n\n" +
+                                "Bạn có muốn đặt thêm bắp nước cho suất chiếu này không?", "Thành công",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+            {
+                using (drink f = new drink(showtimeId))
+                {
+                    f.ShowDialog(this);
+                }
+            }
+
             DialogResult = DialogResult.OK;
             Close();
         }

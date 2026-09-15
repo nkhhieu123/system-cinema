@@ -1,4 +1,5 @@
-﻿using rạp_chiếu_phim.khách_hàng;
+﻿using cinema_system.đăng_nhập;
+using rạp_chiếu_phim.khách_hàng;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,6 +15,7 @@ namespace cinema_system.nhân_viên
             public int ShowtimeID { get; set; }
             public DateTime Start { get; set; }
             public string RoomName { get; set; } // null = suất chiếu chưa gán phòng
+            public int Duration { get; set; }    // phút
         }
 
         private readonly ToolTip toolTip = new ToolTip();
@@ -23,9 +25,9 @@ namespace cinema_system.nhân_viên
             InitializeComponent();
         }
 
-        public void SetData(string name, Image poster, List<ShowtimeInfo> showtimes)
+        public void SetData(string name, int? duration, Image poster, List<ShowtimeInfo> showtimes)
         {
-            lblMovieName.Text = name;
+            lblMovieName.Text = duration.HasValue ? $"{name} ({duration} phút)" : name;
             picPoster.Image = poster; // null = phim chưa có poster
 
             flowTimes.Controls.Clear();
@@ -42,9 +44,10 @@ namespace cinema_system.nhân_viên
                 btn.FlatStyle = FlatStyle.Flat;
                 btn.Tag = st;
                 btn.Click += Time_Click;
+                string gio = $"{st.Start:HH:mm} - {st.Start.AddMinutes(st.Duration):HH:mm}";
                 toolTip.SetToolTip(btn, st.RoomName == null ? "Chưa gán phòng chiếu"
-                                      : st.Start <= DateTime.Now ? st.RoomName + " - đã bắt đầu"
-                                      : st.RoomName);
+                                      : st.Start <= DateTime.Now ? $"{st.RoomName} ({gio}) - đã bắt đầu"
+                                      : $"{st.RoomName} ({gio})");
                 flowTimes.Controls.Add(btn);
             }
         }
@@ -65,10 +68,16 @@ namespace cinema_system.nhân_viên
                 return;
             }
 
+            Form owner = FindForm();
+            DialogResult result;
             using (phòng_chiếu pc = new phòng_chiếu(st.ShowtimeID))
             {
-                pc.ShowDialog(FindForm());
+                result = pc.ShowDialog(owner);
             }
+
+            // Khách chưa đăng nhập bấm "Đăng nhập để đặt vé"
+            if (result == DialogResult.Retry && owner != null)
+                Program.SwitchForm(owner, new Đăng_nhập());
         }
     }
 }

@@ -77,6 +77,12 @@ namespace cinema_system.admin
             ShowContent(new thong_ke());
         }
 
+        private void CaiDat_Click(object sender, EventArgs e)
+        {
+            ActivateButton((Button)sender);
+            ShowContent(new cai_dat());
+        }
+
         private void exit_Click(object sender, EventArgs e)
         {
             Program.SwitchForm(this, new Đăng_nhập());

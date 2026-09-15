@@ -80,6 +80,15 @@ namespace cinema_system.nhân_viên
             panel9.Controls.Add(movie);
         }
 
+        private void DoUong_Click(object sender, EventArgs e)
+        {
+            ActivateButton((Button)sender);
+            panel9.Controls.Clear();
+            quan_ly_do_uong doUong = new quan_ly_do_uong();
+            doUong.Dock = DockStyle.Fill;
+            panel9.Controls.Add(doUong);
+        }
+
         private void HoannVe_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);

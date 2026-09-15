@@ -36,6 +36,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.exit = new System.Windows.Forms.Button();
             this.Phim = new System.Windows.Forms.Button();
+            this.CaiDat = new System.Windows.Forms.Button();
             this.SuatChieu = new System.Windows.Forms.Button();
             this.Thongke = new System.Windows.Forms.Button();
             this.Quanly = new System.Windows.Forms.Button();
@@ -97,6 +98,7 @@
             this.panel2.BackColor = System.Drawing.Color.Transparent;
             this.panel2.Controls.Add(this.exit);
             this.panel2.Controls.Add(this.Phim);
+            this.panel2.Controls.Add(this.CaiDat);
             this.panel2.Controls.Add(this.SuatChieu);
             this.panel2.Controls.Add(this.Thongke);
             this.panel2.Controls.Add(this.Quanly);
@@ -132,6 +134,19 @@
             this.Phim.Text = "Phim";
             this.Phim.UseVisualStyleBackColor = false;
             this.Phim.Click += new System.EventHandler(this.Phim_Click);
+            // 
+            // CaiDat
+            // 
+            this.CaiDat.BackColor = System.Drawing.Color.Black;
+            this.CaiDat.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CaiDat.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.CaiDat.Location = new System.Drawing.Point(0, 193);
+            this.CaiDat.Name = "CaiDat";
+            this.CaiDat.Size = new System.Drawing.Size(239, 52);
+            this.CaiDat.TabIndex = 12;
+            this.CaiDat.Text = "Cài đặt";
+            this.CaiDat.UseVisualStyleBackColor = false;
+            this.CaiDat.Click += new System.EventHandler(this.CaiDat_Click);
             // 
             // SuatChieu
             // 
@@ -229,6 +244,7 @@
         private System.Windows.Forms.Panel panelcovertrai;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button Phim;
+        private System.Windows.Forms.Button CaiDat;
         private System.Windows.Forms.Button SuatChieu;
         private System.Windows.Forms.Button Thongke;
         private System.Windows.Forms.Button Quanly;

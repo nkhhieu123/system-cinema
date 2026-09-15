@@ -6,17 +6,28 @@ using System.Windows.Forms;
 
 namespace cinema_system.admin
 {
-    // Quản lý tài khoản nhân viên (VaiTro = 'staff')
+    // Quản lý tài khoản theo loại (nhân viên / khách hàng / admin): thêm, sửa, đặt lại mật khẩu, xóa
     // textBox1: Họ tên, textBox2: SĐT, textBox3: Email, textBox4: Tên đăng nhập, textBox5: Mật khẩu
     public partial class AllStaff : UserControl
     {
         string connectionString = Db.ConnectionString;
         private int selectedId = -1;
 
+        // Thứ tự khớp với cbVaiTro
+        private static readonly string[] VaiTroValues = { "staff", "user", "admin" };
+        private string VaiTro { get { return VaiTroValues[Math.Max(0, cbVaiTro.SelectedIndex)]; } }
+
         public AllStaff()
         {
             InitializeComponent();
             new ToolTip().SetToolTip(textBox5, "Khi sửa: để trống nếu không muốn đổi mật khẩu");
+            cbVaiTro.Items.AddRange(new object[] { "Nhân viên", "Khách hàng", "Admin" });
+            cbVaiTro.SelectedIndex = 0;
+            cbVaiTro.SelectedIndexChanged += (s, e) =>
+            {
+                ClearForm();
+                LoadStaff();
+            };
 
             // Cột được sinh khi control đã gắn lên form, nên chỉnh cột sau khi bind xong
             dataGridView1.DataBindingComplete += (s, e) =>
@@ -37,9 +48,11 @@ namespace cinema_system.admin
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                SqlDataAdapter da = new SqlDataAdapter(
+                SqlCommand cmd = new SqlCommand(
                     "SELECT IDTaiKhoan, TenDangNhap, HoTen, Email, SDT, NgayTao " +
-                    "FROM TaiKhoan WHERE VaiTro = N'staff' ORDER BY IDTaiKhoan", conn);
+                    "FROM TaiKhoan WHERE VaiTro = @vaitro ORDER BY IDTaiKhoan", conn);
+                cmd.Parameters.AddWithValue("@vaitro", VaiTro);
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
                 dataGridView1.DataSource = dt;
@@ -124,13 +137,14 @@ namespace cinema_system.admin
 
                 SqlCommand cmd = new SqlCommand(
                     @"INSERT INTO TaiKhoan (TenDangNhap, Pass, HoTen, Email, SDT, VaiTro, NgayTao)
-                      VALUES (@ten, @pass, @hoten, @email, @sdt, N'staff', GETDATE())", conn);
+                      VALUES (@ten, @pass, @hoten, @email, @sdt, @vaitro, GETDATE())", conn);
                 AddInfoParameters(cmd);
+                cmd.Parameters.AddWithValue("@vaitro", VaiTro);
                 cmd.Parameters.AddWithValue("@pass", PasswordHasher.Hash(textBox5.Text.Trim()));
                 cmd.ExecuteNonQuery();
             }
 
-            MessageBox.Show("Thêm nhân viên thành công!");
+            MessageBox.Show("Thêm tài khoản " + cbVaiTro.Text.ToLower() + " thành công!");
             LoadStaff();
             ClearForm();
         }
@@ -139,7 +153,7 @@ namespace cinema_system.admin
         {
             if (selectedId < 0)
             {
-                MessageBox.Show("Hãy chọn một nhân viên để sửa.");
+                MessageBox.Show("Hãy chọn một tài khoản để sửa.");
                 return;
             }
             if (!ValidateInput(false))
@@ -156,9 +170,10 @@ namespace cinema_system.admin
 
                 string query = "UPDATE TaiKhoan SET TenDangNhap=@ten, HoTen=@hoten, Email=@email, SDT=@sdt" +
                                (doiMatKhau ? ", Pass=@pass" : "") +
-                               " WHERE IDTaiKhoan=@id AND VaiTro = N'staff'";
+                               " WHERE IDTaiKhoan=@id AND VaiTro = @vaitro";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 AddInfoParameters(cmd);
+                cmd.Parameters.AddWithValue("@vaitro", VaiTro);
                 if (doiMatKhau)
                     cmd.Parameters.AddWithValue("@pass", PasswordHasher.Hash(textBox5.Text.Trim()));
                 cmd.Parameters.AddWithValue("@id", selectedId);
@@ -174,7 +189,12 @@ namespace cinema_system.admin
         {
             if (selectedId < 0)
             {
-                MessageBox.Show("Hãy chọn một nhân viên để xóa.");
+                MessageBox.Show("Hãy chọn một tài khoản để xóa.");
+                return;
+            }
+            if (selectedId == Session.IDTaiKhoan)
+            {
+                MessageBox.Show("Không thể xóa tài khoản đang đăng nhập.");
                 return;
             }
 
@@ -187,14 +207,26 @@ namespace cinema_system.admin
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    SqlCommand cmd = new SqlCommand("DELETE FROM TaiKhoan WHERE IDTaiKhoan=@id AND VaiTro = N'staff'", conn);
+
+                    if (VaiTro == "admin")
+                    {
+                        SqlCommand count = new SqlCommand("SELECT COUNT(*) FROM TaiKhoan WHERE VaiTro = N'admin'", conn);
+                        if ((int)count.ExecuteScalar() <= 1)
+                        {
+                            MessageBox.Show("Phải còn ít nhất một tài khoản admin.");
+                            return;
+                        }
+                    }
+
+                    SqlCommand cmd = new SqlCommand("DELETE FROM TaiKhoan WHERE IDTaiKhoan=@id AND VaiTro = @vaitro", conn);
                     cmd.Parameters.AddWithValue("@id", selectedId);
+                    cmd.Parameters.AddWithValue("@vaitro", VaiTro);
                     cmd.ExecuteNonQuery();
                 }
             }
             catch (SqlException ex) when (ex.Number == 547) // vi phạm khóa ngoại
             {
-                MessageBox.Show("Không thể xóa: nhân viên này đã bán vé (vé vẫn cần lưu lại để thống kê).");
+                MessageBox.Show("Không thể xóa: tài khoản này đã có vé hoặc đơn bắp nước (cần giữ lại để thống kê).");
                 return;
             }
 

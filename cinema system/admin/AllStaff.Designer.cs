@@ -40,6 +40,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.cbVaiTro = new System.Windows.Forms.ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.Add = new System.Windows.Forms.Button();
             this.Fix = new System.Windows.Forms.Button();
@@ -66,6 +67,7 @@
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.cbVaiTro);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
@@ -164,9 +166,18 @@
             this.label1.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(10, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(270, 26);
+            this.label1.Size = new System.Drawing.Size(150, 26);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Hệ thống quản lý nhân viên";
+            this.label1.Text = "Loại tài khoản";
+            //
+            // cbVaiTro
+            //
+            this.cbVaiTro.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbVaiTro.Font = new System.Drawing.Font("Times New Roman", 12F);
+            this.cbVaiTro.Location = new System.Drawing.Point(170, 9);
+            this.cbVaiTro.Name = "cbVaiTro";
+            this.cbVaiTro.Size = new System.Drawing.Size(186, 27);
+            this.cbVaiTro.TabIndex = 13;
             // 
             // panel2
             // 
@@ -248,6 +259,7 @@
 
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox cbVaiTro;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;

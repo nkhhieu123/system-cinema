@@ -38,6 +38,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.exit = new System.Windows.Forms.Button();
             this.PhongChieu = new System.Windows.Forms.Button();
+            this.DoUong = new System.Windows.Forms.Button();
             this.Phim = new System.Windows.Forms.Button();
             this.SuatChieu = new System.Windows.Forms.Button();
             this.HoanVe = new System.Windows.Forms.Button();
@@ -126,6 +127,7 @@
             this.panel2.BackColor = System.Drawing.Color.Firebrick;
             this.panel2.Controls.Add(this.exit);
             this.panel2.Controls.Add(this.PhongChieu);
+            this.panel2.Controls.Add(this.DoUong);
             this.panel2.Controls.Add(this.Phim);
             this.panel2.Controls.Add(this.SuatChieu);
             this.panel2.Controls.Add(this.HoanVe);
@@ -163,6 +165,19 @@
             this.PhongChieu.Text = "Phòng chiếu";
             this.PhongChieu.UseVisualStyleBackColor = false;
             this.PhongChieu.Click += new System.EventHandler(this.PhongChieu_Click);
+            // 
+            // DoUong
+            // 
+            this.DoUong.BackColor = System.Drawing.Color.Firebrick;
+            this.DoUong.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DoUong.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.DoUong.Location = new System.Drawing.Point(0, 242);
+            this.DoUong.Name = "DoUong";
+            this.DoUong.Size = new System.Drawing.Size(239, 52);
+            this.DoUong.TabIndex = 12;
+            this.DoUong.Text = "Bắp nước";
+            this.DoUong.UseVisualStyleBackColor = false;
+            this.DoUong.Click += new System.EventHandler(this.DoUong_Click);
             // 
             // Phim
             // 
@@ -288,6 +303,7 @@
         private System.Windows.Forms.Panel panelcovertrai;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button PhongChieu;
+        private System.Windows.Forms.Button DoUong;
         private System.Windows.Forms.Button Phim;
         private System.Windows.Forms.Button SuatChieu;
         private System.Windows.Forms.Button HoanVe;
