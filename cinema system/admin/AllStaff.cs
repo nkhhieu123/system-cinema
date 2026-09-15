@@ -88,14 +88,15 @@ namespace cinema_system.admin
             return true;
         }
 
-        // Tên đăng nhập là duy nhất trên toàn bộ tài khoản (kể cả admin / khách hàng)
-        private bool UsernameExists(SqlConnection conn, string username, int excludeId)
+        // Tên đăng nhập / email / SĐT không được trùng với bất kỳ tài khoản nào (kể cả admin / khách hàng)
+        private bool CheckDuplicate(SqlConnection conn, int excludeId)
         {
-            SqlCommand cmd = new SqlCommand(
-                "SELECT COUNT(*) FROM TaiKhoan WHERE TenDangNhap = @ten AND IDTaiKhoan <> @id", conn);
-            cmd.Parameters.AddWithValue("@ten", username);
-            cmd.Parameters.AddWithValue("@id", excludeId);
-            return (int)cmd.ExecuteScalar() > 0;
+            string trung = Db.FindAccountDuplicate(conn, textBox4.Text.Trim(), textBox3.Text.Trim(), textBox2.Text.Trim(), excludeId);
+            if (trung == null)
+                return true;
+
+            MessageBox.Show(trung);
+            return false;
         }
 
         // Thông tin chung cho thêm / sửa; Email và Sđt bỏ trống thì lưu NULL
@@ -118,18 +119,14 @@ namespace cinema_system.admin
             {
                 conn.Open();
 
-                if (UsernameExists(conn, textBox4.Text.Trim(), -1))
-                {
-                    MessageBox.Show("Tên đăng nhập đã tồn tại!");
-                    textBox4.Focus();
+                if (!CheckDuplicate(conn, -1))
                     return;
-                }
 
                 SqlCommand cmd = new SqlCommand(
                     @"INSERT INTO TaiKhoan (TenDangNhap, Pass, HoTen, Email, SDT, VaiTro, NgayTao)
                       VALUES (@ten, @pass, @hoten, @email, @sdt, N'staff', GETDATE())", conn);
                 AddInfoParameters(cmd);
-                cmd.Parameters.AddWithValue("@pass", textBox5.Text.Trim());
+                cmd.Parameters.AddWithValue("@pass", PasswordHasher.Hash(textBox5.Text.Trim()));
                 cmd.ExecuteNonQuery();
             }
 
@@ -154,12 +151,8 @@ namespace cinema_system.admin
             {
                 conn.Open();
 
-                if (UsernameExists(conn, textBox4.Text.Trim(), selectedId))
-                {
-                    MessageBox.Show("Tên đăng nhập đã tồn tại!");
-                    textBox4.Focus();
+                if (!CheckDuplicate(conn, selectedId))
                     return;
-                }
 
                 string query = "UPDATE TaiKhoan SET TenDangNhap=@ten, HoTen=@hoten, Email=@email, SDT=@sdt" +
                                (doiMatKhau ? ", Pass=@pass" : "") +
@@ -167,7 +160,7 @@ namespace cinema_system.admin
                 SqlCommand cmd = new SqlCommand(query, conn);
                 AddInfoParameters(cmd);
                 if (doiMatKhau)
-                    cmd.Parameters.AddWithValue("@pass", textBox5.Text.Trim());
+                    cmd.Parameters.AddWithValue("@pass", PasswordHasher.Hash(textBox5.Text.Trim()));
                 cmd.Parameters.AddWithValue("@id", selectedId);
                 cmd.ExecuteNonQuery();
             }
@@ -189,12 +182,20 @@ namespace cinema_system.admin
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                conn.Open();
-                SqlCommand cmd = new SqlCommand("DELETE FROM TaiKhoan WHERE IDTaiKhoan=@id AND VaiTro = N'staff'", conn);
-                cmd.Parameters.AddWithValue("@id", selectedId);
-                cmd.ExecuteNonQuery();
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand("DELETE FROM TaiKhoan WHERE IDTaiKhoan=@id AND VaiTro = N'staff'", conn);
+                    cmd.Parameters.AddWithValue("@id", selectedId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 547) // vi phạm khóa ngoại
+            {
+                MessageBox.Show("Không thể xóa: nhân viên này đã bán vé (vé vẫn cần lưu lại để thống kê).");
+                return;
             }
 
             MessageBox.Show("Xóa thành công!");

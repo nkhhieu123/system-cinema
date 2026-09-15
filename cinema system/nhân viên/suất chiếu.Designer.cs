@@ -40,6 +40,8 @@
             this.lblTime = new System.Windows.Forms.Label();
             this.dtpTime = new System.Windows.Forms.DateTimePicker();
             this.btnAddShowtime = new System.Windows.Forms.Button();
+            this.lblRoom = new System.Windows.Forms.Label();
+            this.cbRoom = new System.Windows.Forms.ComboBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvShowtimes)).BeginInit();
             this.panel2.SuspendLayout();
@@ -48,10 +50,10 @@
             // panel1
             // 
             this.panel1.Controls.Add(this.dgvShowtimes);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 144);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(0, 160);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(695, 351);
+            this.panel1.Size = new System.Drawing.Size(695, 335);
             this.panel1.TabIndex = 8;
             // 
             // dgvShowtimes
@@ -82,10 +84,12 @@
             this.panel2.Controls.Add(this.lblTime);
             this.panel2.Controls.Add(this.dtpTime);
             this.panel2.Controls.Add(this.btnAddShowtime);
+            this.panel2.Controls.Add(this.lblRoom);
+            this.panel2.Controls.Add(this.cbRoom);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(695, 138);
+            this.panel2.Size = new System.Drawing.Size(695, 160);
             this.panel2.TabIndex = 9;
             // 
             // btnDelShowtime
@@ -171,11 +175,29 @@
             this.btnAddShowtime.TabIndex = 13;
             this.btnAddShowtime.Text = "Thêm suất chiếu";
             this.btnAddShowtime.Click += new System.EventHandler(this.btnAddShowtime_Click);
+            //
+            // lblRoom
+            //
+            this.lblRoom.AutoSize = true;
+            this.lblRoom.Font = new System.Drawing.Font("Times New Roman", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRoom.Location = new System.Drawing.Point(20, 122);
+            this.lblRoom.Name = "lblRoom";
+            this.lblRoom.Size = new System.Drawing.Size(92, 19);
+            this.lblRoom.TabIndex = 16;
+            this.lblRoom.Text = "Phòng chiếu:";
+            //
+            // cbRoom
+            //
+            this.cbRoom.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbRoom.Location = new System.Drawing.Point(116, 119);
+            this.cbRoom.Name = "cbRoom";
+            this.cbRoom.Size = new System.Drawing.Size(231, 24);
+            this.cbRoom.TabIndex = 17;
             // 
             // ThemMovie
             // 
-            this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panel2);
             this.Name = "ThemMovie";
             this.Size = new System.Drawing.Size(695, 495);
             this.Load += new System.EventHandler(this.FormAddShowtime_Load);
@@ -198,6 +220,8 @@
         private System.Windows.Forms.Label lblMovie;
         private System.Windows.Forms.ComboBox cbMovie;
         private System.Windows.Forms.Label lblTime;
+        private System.Windows.Forms.Label lblRoom;
+        private System.Windows.Forms.ComboBox cbRoom;
         private System.Windows.Forms.DateTimePicker dtpTime;
         private System.Windows.Forms.Button btnAddShowtime;
         private System.Windows.Forms.Button btnDelShowtime;

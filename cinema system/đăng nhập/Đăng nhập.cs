@@ -22,6 +22,7 @@ namespace cinema_system.đăng_nhập
         public Đăng_nhập()
         {
             InitializeComponent();
+            Session.DangXuat(); // về màn hình đăng nhập = đăng xuất
             GenerateCaptcha();
 
             UC_Đăng_ký ucDangKy = new UC_Đăng_ký();
@@ -55,22 +56,48 @@ namespace cinema_system.đăng_nhập
                 {
                     con.Open();
 
-                    // Kiểm tra tài khoản trong bảng
-                    string query = "SELECT VaiTro FROM TaiKhoan WHERE TenDangNhap = @username AND Pass = @password";
+                    // Đăng nhập bằng tên đăng nhập, email hoặc số điện thoại (ưu tiên trùng tên đăng nhập)
+                    string query = @"SELECT IDTaiKhoan, TenDangNhap, Pass, VaiTro FROM TaiKhoan
+                                     WHERE TenDangNhap = @username OR Email = @username OR SDT = @username
+                                     ORDER BY CASE WHEN TenDangNhap = @username THEN 0 ELSE 1 END";
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@username", username);
-                    cmd.Parameters.AddWithValue("@password", password);
 
-                    object result = cmd.ExecuteScalar(); // chỉ lấy 1 giá trị đầu tiên (VaiTro)
+                    int id = 0;
+                    string tenDangNhap = null, role = null;
+                    bool needsRehash = false;
 
-                    if (result == null || result == DBNull.Value)
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (PasswordHasher.Verify(password, reader["Pass"].ToString(), out needsRehash))
+                            {
+                                id = Convert.ToInt32(reader["IDTaiKhoan"]);
+                                tenDangNhap = reader["TenDangNhap"].ToString();
+                                role = reader["VaiTro"].ToString().Trim();
+                                break;
+                            }
+                        }
+                    }
+
+                    if (tenDangNhap == null)
                     {
                         MessageBox.Show("Sai tên đăng nhập hoặc mật khẩu!", "Thông báo");
                         GenerateCaptcha();
                         return;
                     }
 
-                    string role = result.ToString().Trim();
+                    // Mật khẩu cũ còn lưu dạng văn bản thường -> băm lại
+                    if (needsRehash)
+                    {
+                        SqlCommand rehash = new SqlCommand("UPDATE TaiKhoan SET Pass = @pass WHERE IDTaiKhoan = @id", con);
+                        rehash.Parameters.AddWithValue("@pass", PasswordHasher.Hash(password));
+                        rehash.Parameters.AddWithValue("@id", id);
+                        rehash.ExecuteNonQuery();
+                    }
+
+                    Session.DangNhap(id, tenDangNhap, role);
                     Form next;
 
                     // chuyển hướng theo vai trò
@@ -79,9 +106,10 @@ namespace cinema_system.đăng_nhập
                     else if (role.Equals("staff", StringComparison.OrdinalIgnoreCase))
                         next = new StaffDesign();
                     else if (role.Equals("user", StringComparison.OrdinalIgnoreCase))
-                        next = new thông_tin_khách_hàng(username);
+                        next = new thông_tin_khách_hàng(tenDangNhap);
                     else
                     {
+                        Session.DangXuat();
                         MessageBox.Show("Vai trò tài khoản không hợp lệ: " + role, "Thông báo");
                         return;
                     }
@@ -153,6 +181,14 @@ namespace cinema_system.đăng_nhập
         private void back_Click(object sender, EventArgs e)
         {
             Program.SwitchForm(this, new UserDesign());
+        }
+
+        private void linkForgot_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            using (QuenMatKhau f = new QuenMatKhau())
+            {
+                f.ShowDialog(this);
+            }
         }
     }
 }

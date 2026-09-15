@@ -71,10 +71,10 @@ namespace cinema_system.admin
             ShowContent(new addmovie());
         }
 
-        // Nút "Thống kê" (chưa làm)
-        private void HoannVe_Click(object sender, EventArgs e)
+        private void Thongke_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);
+            ShowContent(new thong_ke());
         }
 
         private void exit_Click(object sender, EventArgs e)

@@ -193,5 +193,16 @@ namespace cinema_system.nhân_viên
                 LoadRoomMovies();
             }
         }
+
+        // Thêm / đổi tên / xóa phòng, xong thì nạp lại danh sách
+        private void btnRooms_Click(object sender, EventArgs e)
+        {
+            using (QuanLyPhong f = new QuanLyPhong())
+            {
+                f.ShowDialog(FindForm());
+            }
+            LoadRooms();
+            LoadRoomMovies();
+        }
     }
 }

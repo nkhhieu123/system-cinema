@@ -130,6 +130,7 @@
             this.HoanVe.TabIndex = 3;
             this.HoanVe.Text = "Hoàn vé";
             this.HoanVe.UseVisualStyleBackColor = false;
+            this.HoanVe.Click += new System.EventHandler(this.HoanVe_Click);
             // 
             // Ve
             // 

@@ -83,18 +83,13 @@ namespace cinema_system.đăng_nhập
                 {
                     connect.Open();
 
-                    // 1️⃣ Kiểm tra tên đăng nhập đã tồn tại chưa
-                    string checkUsername = "SELECT COUNT(*) FROM [dbo].[TaiKhoan] WHERE TenDangNhap = @username";
-                    using (SqlCommand CheckUser = new SqlCommand(checkUsername, connect))
+                    // 1️⃣ Kiểm tra tên đăng nhập / email / số điện thoại đã được dùng chưa
+                    string trung = Db.FindAccountDuplicate(connect, txtName.Text.Trim(),
+                        txtEmail.Text.Trim(), txtPhone.Text.Trim(), -1);
+                    if (trung != null)
                     {
-                        CheckUser.Parameters.AddWithValue("@username", txtName.Text.Trim());
-                        int count = (int)CheckUser.ExecuteScalar();
-
-                        if (count > 0)
-                        {
-                            MessageBox.Show("Đăng ký thất bại, tài khoản đã tồn tại!");
-                            return;
-                        }
+                        MessageBox.Show("Đăng ký thất bại: " + trung);
+                        return;
                     }
 
                     // 2️⃣ Chèn tài khoản mới (IDTaiKhoan là IDENTITY nên SQL Server tự sinh)
@@ -107,7 +102,7 @@ namespace cinema_system.đăng_nhập
                     using (SqlCommand cmd = new SqlCommand(insertData, connect))
                     {
                         cmd.Parameters.AddWithValue("@username", txtName.Text.Trim());
-                        cmd.Parameters.AddWithValue("@pass", txtPassword.Text.Trim());
+                        cmd.Parameters.AddWithValue("@pass", PasswordHasher.Hash(txtPassword.Text.Trim()));
                         cmd.Parameters.AddWithValue("@hoten", txtName.Text.Trim());
                         cmd.Parameters.AddWithValue("@email", txtEmail.Text.Trim());
                         cmd.Parameters.AddWithValue("@phone", txtPhone.Text.Trim());
@@ -115,7 +110,8 @@ namespace cinema_system.đăng_nhập
                         cmd.Parameters.AddWithValue("@created", DateTime.Now);
 
                         cmd.ExecuteNonQuery();
-                        MessageBox.Show("Đăng ký thành công! Hãy chuyển sang tab Đăng nhập.");
+                        MessageBox.Show("Đăng ký thành công! Hãy chuyển sang tab Đăng nhập.\n" +
+                                        "Có thể đăng nhập bằng tên, email hoặc số điện thoại vừa đăng ký.");
                     }
                 }
 

@@ -97,9 +97,9 @@
             this.lblEmail.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblEmail.Location = new System.Drawing.Point(30, 30);
             this.lblEmail.Name = "lblEmail";
-            this.lblEmail.Size = new System.Drawing.Size(226, 27);
+            this.lblEmail.Size = new System.Drawing.Size(320, 27);
             this.lblEmail.TabIndex = 0;
-            this.lblEmail.Text = "Email hoặc số điện thoại";
+            this.lblEmail.Text = "Tên đăng nhập, email hoặc SĐT";
             // 
             // txtUsername
             // 
@@ -172,6 +172,7 @@
             this.linkForgot.TabIndex = 8;
             this.linkForgot.TabStop = true;
             this.linkForgot.Text = "Bạn muốn tìm lại mật khẩu?";
+            this.linkForgot.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkForgot_LinkClicked);
             // 
             // tabRegister
             // 

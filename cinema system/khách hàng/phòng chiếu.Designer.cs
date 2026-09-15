@@ -97,7 +97,8 @@ namespace rạp_chiếu_phim.khách_hàng
             //
             // btnPrev
             //
-            this.btnPrev.Text = "PREVIOUS";
+            this.btnPrev.Text = "QUAY LẠI";
+            this.btnPrev.Click += new System.EventHandler(this.btnPrev_Click);
             this.btnPrev.Size = new Size(120, 48);
             this.btnPrev.Location = new Point(20, 100);
             this.btnPrev.BackColor = Color.FromArgb(45, 45, 45);
@@ -108,7 +109,8 @@ namespace rạp_chiếu_phim.khách_hàng
             // btnNext
             //
             this.btnNext.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnNext.Text = "NEXT";
+            this.btnNext.Text = "ĐẶT VÉ";
+            this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             this.btnNext.Size = new Size(120, 48);
             this.btnNext.Location = new Point(160, 100);
             this.btnNext.BackColor = Color.FromArgb(200, 30, 45);

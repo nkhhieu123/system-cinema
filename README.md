@@ -14,7 +14,7 @@ Hệ thống có 3 vai trò: **khách hàng**, **nhân viên** và **admin**.
 
 ### 1. Tạo cơ sở dữ liệu
 
-Chạy file `sql/script.sql`. Script sẽ tự tạo database `movie` (nếu chưa có), tạo các bảng và thêm dữ liệu mẫu.
+**Cài mới:** chạy file `sql/script.sql`. Script sẽ tự tạo database `movie` (nếu chưa có), tạo các bảng, index và thêm dữ liệu mẫu.
 
 - **Bằng SSMS:** mở file `sql/script.sql` → bấm **Execute**.
 - **Bằng dòng lệnh:**
@@ -23,8 +23,15 @@ Chạy file `sql/script.sql`. Script sẽ tự tạo database `movie` (nếu ch�
   sqlcmd -S .\SQLEXPRESS -E -i sql\script.sql
   ```
 
+**Đã có database tạo bằng script bản cũ:** không chạy lại `script.sql` (lệnh `CREATE TABLE` sẽ báo lỗi vì bảng đã tồn tại). Thay vào đó chạy `sql/cap_nhat_csdl.sql` để thêm các cột và index mới:
+
+```bash
+sqlcmd -S .\SQLEXPRESS -E -i sql\cap_nhat_csdl.sql
+```
+
+Script cập nhật chạy lại nhiều lần cũng không sao, phần nào đã có thì tự bỏ qua. Mật khẩu cũ chưa băm sẽ được ứng dụng tự băm lại khi người dùng đăng nhập thành công.
+
 > File `cinema system/script.sql` là bản sao giống hệt `sql/script.sql`.
-> Script chỉ nên chạy trên database mới: nếu các bảng đã tồn tại, lệnh `CREATE TABLE` sẽ báo lỗi.
 
 ### 2. Cấu hình chuỗi kết nối
 
@@ -59,32 +66,47 @@ Mở `cinema system.sln` bằng Visual Studio → bấm **F5**. Màn hình đầ
 | Admin | `admin` | `admin123` |
 | Nhân viên | `staff` | `staff123` |
 
-Tài khoản khách hàng được tạo ở tab **ĐĂNG KÝ**. Khi đăng nhập, dùng giá trị đã nhập ở ô **Tên** lúc đăng ký làm tên đăng nhập.
-Có thể thêm tài khoản nhân viên mới trong màn hình admin → **Quản lý tài khoản**.
+- Tài khoản khách hàng được tạo ở tab **ĐĂNG KÝ**; ô **Tên** chính là tên đăng nhập.
+- Có thể đăng nhập bằng **tên đăng nhập, email hoặc số điện thoại**.
+- Tài khoản nhân viên mới được tạo trong màn hình admin → **Quản lý tài khoản**.
 
 > Nên đổi mật khẩu của các tài khoản mặc định sau khi cài đặt.
 
 ## Chức năng
 
 ### Đăng nhập / Đăng ký
-- Đăng nhập có captcha (không phân biệt hoa thường), tự chuyển tới màn hình theo vai trò.
-- Đăng ký tài khoản khách hàng: kiểm tra trùng tên đăng nhập, ngày sinh hợp lệ, captcha và điều khoản.
+- Đăng nhập bằng tên đăng nhập, email hoặc số điện thoại, có captcha (không phân biệt hoa thường).
+- Đăng ký tài khoản khách hàng: không cho trùng tên đăng nhập / email / số điện thoại, kiểm tra ngày sinh, captcha và điều khoản.
+- **Tìm lại mật khẩu:** nhập đúng tên đăng nhập + email + số điện thoại đã đăng ký thì được đặt mật khẩu mới.
+- Mật khẩu được băm bằng **PBKDF2-SHA256** có salt, không lưu dạng văn bản thường (`cinema system/PasswordHasher.cs`).
 
 ### Khách hàng
 - **Vé:** xem các phim có suất chiếu theo ngày (10 ngày tính từ hôm nay), chọn giờ chiếu để mở sơ đồ ghế.
-- **Sơ đồ ghế:** chọn ghế Thường / VIP / Sweetbox, tự tính tổng tiền.
-- **Thông tin chung:** xem thông tin tài khoản.
-- **Thay đổi thông tin:** sửa họ tên, email, số điện thoại và đổi mật khẩu.
+- **Sơ đồ ghế:** chọn ghế Thường / VIP / Sweetbox, tự tính tổng tiền, bấm **ĐẶT VÉ** để lưu vé. Ghế đã có người đặt hiện màu xám.
+- **Hoàn vé:** xem vé của mình và hoàn vé của các suất chiếu chưa bắt đầu.
+- **Thông tin chung / Thay đổi thông tin:** xem, sửa họ tên, email, số điện thoại và đổi mật khẩu.
 
 ### Nhân viên
-- **Vé:** giống màn hình Vé của khách hàng.
-- **Phim:** thêm / sửa / xóa phim, giá vé và ảnh poster. Chọn một dòng để đổ dữ liệu lên form.
-- **Suất chiếu:** thêm / sửa / xóa suất chiếu, không cho trùng phim + ngày + giờ.
-- **Phòng chiếu:** gán phim cho phòng, đổi phim, xóa phim khỏi phòng.
+- **Vé:** bán vé tại quầy, dùng chung màn hình Vé và sơ đồ ghế với khách hàng.
+- **Hoàn vé:** tìm vé theo tên đăng nhập, họ tên, email, số điện thoại hoặc tên phim; hoàn một hoặc nhiều vé cùng lúc.
+- **Phim:** thêm / sửa / xóa phim, giá vé và ảnh poster.
+- **Suất chiếu:** thêm / sửa / xóa suất chiếu, bắt buộc chọn phòng.
+- **Phòng chiếu:** gán phim cho phòng; nút **Quản lý phòng** để thêm / đổi tên / xóa phòng.
 
 ### Admin
 - **Quản lý tài khoản:** thêm / sửa / xóa tài khoản nhân viên. Khi sửa, để trống ô mật khẩu nếu không muốn đổi.
+- **Thống kê:** chọn khoảng ngày để xem số vé đã bán, doanh thu, số vé đã hoàn, số suất chiếu; xem chi tiết theo phim hoặc theo ngày.
 - **Phim** và **Suất chiếu:** dùng chung màn hình với nhân viên.
+
+## Quy tắc nghiệp vụ
+
+- **Giá vé:** ghế Thường = giá vé của phim; ghế VIP = giá phim + 30.000đ; ghế Sweetbox = giá phim + 80.000đ. Phim chưa nhập giá thì tính 70.000đ. Giá của từng vé được lưu lại lúc đặt nên đổi giá phim không ảnh hưởng vé đã bán.
+- **Sơ đồ ghế:** mỗi phòng mặc định 10 hàng × 12 ghế (hàng A–C ghế Thường, D–I ghế VIP, J ghế Sweetbox). Ghế được tạo khi thêm phòng, hoặc tự tạo khi mở sơ đồ ghế lần đầu với phòng chưa có ghế.
+- **Đặt vé:** chỉ đặt được suất chiếu đã gán phòng và chưa bắt đầu. Vé được lưu trong một transaction có khóa, cùng với unique index, nên 2 người không thể đặt trùng một ghế.
+- **Hoàn vé:** chỉ hoàn được trước giờ chiếu. Vé hoàn không bị xóa mà đánh dấu `IsBooked = 0`, nên ghế được mở bán lại và số liệu vẫn còn cho thống kê.
+- **Suất chiếu:** một phòng không có 2 suất cùng ngày, cùng giờ bắt đầu. Không thêm / sửa suất vào thời điểm đã qua. Suất đã bán vé thì không sửa được; suất đã có vé (kể cả vé đã hoàn) thì không xóa được.
+- **Thống kê:** tính theo thời điểm đặt vé.
+- **Poster:** ảnh được thu nhỏ và lưu thẳng trong database (cột `Movies.Poster`), nên máy nào dùng chung database cũng thấy. Phim cũ chỉ có đường dẫn file vẫn hiển thị nếu file còn; bấm **Sửa** phim đó để chuyển ảnh vào database.
 
 ## Cấu trúc thư mục
 
@@ -92,16 +114,19 @@ Có thể thêm tài khoản nhân viên mới trong màn hình admin → **Qu�
 system-cinema/
 ├── cinema system.sln
 ├── sql/
-│   └── script.sql              # Script tạo database + dữ liệu mẫu
+│   ├── script.sql              # Tạo database mới + dữ liệu mẫu
+│   └── cap_nhat_csdl.sql       # Nâng cấp database tạo bằng script bản cũ
 └── cinema system/
     ├── App.config              # Chuỗi kết nối SQL Server
     ├── Program.cs              # Điểm khởi động, chuyển đổi giữa các form
-    ├── Db.cs                   # Đọc chuỗi kết nối dùng chung
-    ├── CarouselControl.cs      # Control trình chiếu ảnh
-    ├── đăng nhập/              # Đăng nhập, đăng ký
+    ├── Db.cs                   # Chuỗi kết nối, kiểm tra trùng tài khoản
+    ├── Session.cs              # Tài khoản đang đăng nhập
+    ├── PasswordHasher.cs       # Băm / kiểm tra mật khẩu
+    ├── PosterImage.cs          # Đọc / lưu ảnh poster
+    ├── đăng nhập/              # Đăng nhập, đăng ký, tìm lại mật khẩu
     ├── khách hàng/             # Màn hình khách hàng, sơ đồ ghế, thông tin tài khoản
-    ├── nhân viên/              # Quản lý phim, suất chiếu, phòng chiếu, đặt vé
-    ├── admin/                  # Màn hình admin, quản lý tài khoản nhân viên
+    ├── nhân viên/              # Vé, hoàn vé, phim, suất chiếu, phòng chiếu
+    ├── admin/                  # Màn hình admin, quản lý tài khoản, thống kê
     ├── Properties/
     └── Resources/              # Hình ảnh
 ```
@@ -110,26 +135,27 @@ system-cinema/
 
 | Bảng | Mô tả |
 | --- | --- |
-| `TaiKhoan` | Tài khoản đăng nhập; cột `VaiTro` là `admin`, `staff` hoặc `user` |
-| `Movies` | Phim: tên, giá vé, đường dẫn poster |
+| `TaiKhoan` | Tài khoản đăng nhập; `VaiTro` là `admin`, `staff` hoặc `user`; `Pass` lưu mật khẩu đã băm |
+| `Movies` | Phim: tên, giá vé (giá ghế thường), ảnh poster |
 | `Showtimes` | Suất chiếu: phim, phòng, ngày chiếu, giờ chiếu |
 | `Rooms` | Phòng chiếu (script tạo sẵn Phòng 1–3) |
 | `RoomMovies` | Phim được gán cho phòng nào |
-| `Seats` | Ghế theo phòng và loại ghế |
-| `BookedSeats` | Ghế đã đặt theo suất chiếu |
+| `Seats` | Ghế của từng phòng: tên ghế (A1, B5...) và loại ghế |
+| `BookedSeats` | Vé: suất chiếu, ghế, người đặt, giá, thời điểm đặt; `IsBooked = 0` là vé đã hoàn |
 
-## Chưa hoàn thiện / hạn chế hiện tại
+## Hạn chế hiện tại
 
-- Sơ đồ ghế chỉ chọn ghế và tính tiền, **chưa lưu vé vào database** (bảng `Seats`, `BookedSeats` chưa được dùng); nút PREVIOUS / NEXT chưa có chức năng.
-- Giá ghế đang cố định trong code (Thường 70.000đ, VIP 100.000đ, Sweetbox 150.000đ), chưa lấy theo giá phim.
-- Nút **Hoàn vé** (nhân viên, khách hàng) và **Thống kê** (admin) chưa có chức năng.
-- Suất chiếu chưa chọn phòng chiếu; chưa có màn hình thêm / sửa phòng.
-- Ô đăng nhập ghi "Email hoặc số điện thoại" nhưng thực tế đăng nhập bằng **tên đăng nhập**; link "Bạn muốn tìm lại mật khẩu?" chưa có chức năng.
-- Mật khẩu đang lưu dạng văn bản thường, chưa mã hóa.
-- Poster phim lưu **đường dẫn tuyệt đối** tới file ảnh, nên sang máy khác sẽ không hiện ảnh.
+- Chưa có thời lượng phim, nên chỉ chặn được 2 suất trùng đúng giờ bắt đầu trong cùng phòng, chưa chặn được các suất chiếu chồng lên nhau.
+- Mọi phòng dùng chung sơ đồ ghế 10 × 12. Muốn sơ đồ riêng thì phải sửa trực tiếp bảng `Seats` (trước khi phòng có vé).
+- Phụ thu ghế VIP / Sweetbox đang cố định trong code (`khách hàng/phòng chiếu.cs`).
+- Tìm lại mật khẩu chỉ xác minh bằng thông tin đã đăng ký, chưa gửi email / OTP. Tài khoản không có email hoặc số điện thoại thì phải nhờ admin đặt lại.
+- Hoàn vé trả lại toàn bộ tiền, chưa có phí hoàn.
+- Trang chào khách chưa đăng nhập (**Quay lại** ở màn hình đăng nhập) chỉ hiển thị giờ chiếu mẫu; bấm vào sẽ yêu cầu đăng nhập.
+- Form `drink` / `Order thức uống` (đặt đồ uống) mới có giao diện, chưa được dùng.
 
 ## Lỗi thường gặp
 
 - **"Không kết nối được cơ sở dữ liệu"** hoặc lỗi *network-related or instance-specific error*: kiểm tra dịch vụ SQL Server đã chạy chưa và `Data Source` trong `App.config` đã đúng chưa.
 - **"Cannot open database movie"**: chưa chạy `sql/script.sql`, hoặc tài khoản Windows đang dùng không có quyền trên database.
-- **Không hiện ảnh poster**: file ảnh đã bị xóa / di chuyển, hoặc dữ liệu được tạo trên máy khác. Chọn lại ảnh trong màn hình **Phim** rồi bấm **Sửa**.
+- **"Invalid column name 'Poster'"**, **'IDTaiKhoan'**, **'BookedAt'**...: database được tạo bằng script bản cũ, chạy `sql/cap_nhat_csdl.sql`.
+- **Không đăng nhập được bằng mật khẩu mặc định sau khi đã đổi:** dùng **Bạn muốn tìm lại mật khẩu?** (cần email và số điện thoại), hoặc nhờ admin đặt lại trong **Quản lý tài khoản** (chỉ áp dụng cho tài khoản nhân viên).

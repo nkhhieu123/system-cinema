@@ -66,6 +66,33 @@
       <DependentUpon>CarouselControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Db.cs" />
+    <Compile Include="PasswordHasher.cs" />
+    <Compile Include="PosterImage.cs" />
+    <Compile Include="Session.cs" />
+    <Compile Include="admin\thong_ke.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="admin\thong_ke.Designer.cs">
+      <DependentUpon>thong_ke.cs</DependentUpon>
+    </Compile>
+    <Compile Include="đăng nhập\QuenMatKhau.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="đăng nhập\QuenMatKhau.Designer.cs">
+      <DependentUpon>QuenMatKhau.cs</DependentUpon>
+    </Compile>
+    <Compile Include="nhân viên\hoan_ve.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="nhân viên\hoan_ve.Designer.cs">
+      <DependentUpon>hoan_ve.cs</DependentUpon>
+    </Compile>
+    <Compile Include="nhân viên\QuanLyPhong.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="nhân viên\QuanLyPhong.Designer.cs">
+      <DependentUpon>QuanLyPhong.cs</DependentUpon>
+    </Compile>
     <Compile Include="khách hàng\drink.cs">
       <SubType>Form</SubType>
     </Compile>

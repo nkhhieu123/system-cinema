@@ -17,6 +17,7 @@ namespace cinema_system.nhân_viên
         public StaffDesign()
         {
             InitializeComponent();
+            label2.Text = "Xin chào " + Session.TenDangNhap;
         }
 
         Panel indicator;
@@ -82,6 +83,10 @@ namespace cinema_system.nhân_viên
         private void HoannVe_Click(object sender, EventArgs e)
         {
             ActivateButton((Button)sender);
+            panel9.Controls.Clear();
+            hoan_ve hoanVe = new hoan_ve(false);
+            hoanVe.Dock = DockStyle.Fill;
+            panel9.Controls.Add(hoanVe);
         }
 
         private void exit_Click(object sender, EventArgs e)

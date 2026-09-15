@@ -103,9 +103,9 @@ namespace cinema_system.nhân_viên
             this.label2.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.Location = new System.Drawing.Point(3, 70);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(102, 26);
+            this.label2.Size = new System.Drawing.Size(90, 26);
             this.label2.TabIndex = 11;
-            this.label2.Text = "Tên phim";
+            this.label2.Text = "ID phim";
             // 
             // label1
             // 
@@ -113,9 +113,9 @@ namespace cinema_system.nhân_viên
             this.label1.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(3, 30);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(90, 26);
+            this.label1.Size = new System.Drawing.Size(102, 26);
             this.label1.TabIndex = 10;
-            this.label1.Text = "ID phim";
+            this.label1.Text = "Tên phim";
             // 
             // txtMovieName
             // 
@@ -234,8 +234,8 @@ namespace cinema_system.nhân_viên
             // addmovie
             // 
             this.Size = new System.Drawing.Size(760, 600);
-            this.Controls.Add(this.panelTop);
             this.Controls.Add(this.dgvMovies);
+            this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelBottom);
             this.Name = "addmovie";
             this.panelTop.ResumeLayout(false);

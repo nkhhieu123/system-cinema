@@ -47,6 +47,14 @@ namespace cinema_system.Khách_hàng
             panel9.Controls.Add(thay_Doi_Thong_Tin);
         }
 
+        private void HoanVe_Click(object sender, EventArgs e)
+        {
+            panel9.Controls.Clear();
+            hoan_ve hoanVe = new hoan_ve(true);
+            hoanVe.Dock = DockStyle.Fill;
+            panel9.Controls.Add(hoanVe);
+        }
+
         private void exit_Click(object sender, EventArgs e)
         {
             Program.SwitchForm(this, new Đăng_nhập());

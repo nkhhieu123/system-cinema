@@ -30,6 +30,7 @@
         {
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnDel = new System.Windows.Forms.Button();
+            this.btnRooms = new System.Windows.Forms.Button();
             this.btnFix = new System.Windows.Forms.Button();
             this.lblRoom = new System.Windows.Forms.Label();
             this.cbRoom = new System.Windows.Forms.ComboBox();
@@ -45,6 +46,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnRooms);
             this.panel1.Controls.Add(this.btnDel);
             this.panel1.Controls.Add(this.btnFix);
             this.panel1.Controls.Add(this.lblRoom);
@@ -67,6 +69,16 @@
             this.btnDel.TabIndex = 11;
             this.btnDel.Text = "Xóa phim cho phòng";
             this.btnDel.Click += new System.EventHandler(this.btnDel_Click);
+            // 
+            // btnRooms
+            // 
+            this.btnRooms.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRooms.Location = new System.Drawing.Point(610, 89);
+            this.btnRooms.Name = "btnRooms";
+            this.btnRooms.Size = new System.Drawing.Size(141, 62);
+            this.btnRooms.TabIndex = 12;
+            this.btnRooms.Text = "Quản lý phòng";
+            this.btnRooms.Click += new System.EventHandler(this.btnRooms_Click);
             // 
             // btnFix
             // 
@@ -166,5 +178,6 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.DataGridView dgvRoomMovies;
         private System.Windows.Forms.Button btnDel;
+        private System.Windows.Forms.Button btnRooms;
     }
 }

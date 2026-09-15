@@ -157,7 +157,7 @@
             this.Thongke.TabIndex = 3;
             this.Thongke.Text = "Thống kê";
             this.Thongke.UseVisualStyleBackColor = false;
-            this.Thongke.Click += new System.EventHandler(this.HoannVe_Click);
+            this.Thongke.Click += new System.EventHandler(this.Thongke_Click);
             // 
             // Quanly
             // 

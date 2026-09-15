@@ -1,6 +1,5 @@
 ﻿using cinema_system.đăng_nhập;
 using cinema_system.khách_hàng;
-using rạp_chiếu_phim.khách_hàng;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -67,13 +66,11 @@ namespace cinema_system.khách_hàng
             Application.Exit();
         }
 
-        // Dùng chung cho các nút giờ chiếu: mở sơ đồ ghế, đóng lại thì quay về màn hình này
+        // Dùng chung cho các nút giờ chiếu: phải đăng nhập mới đặt được vé
         private void button1_Click(object sender, EventArgs e)
         {
-            using (phòng_chiếu pc = new phòng_chiếu())
-            {
-                pc.ShowDialog(this);
-            }
+            MessageBox.Show("Vui lòng đăng nhập hoặc đăng ký tài khoản để đặt vé.", "Thông báo");
+            Program.SwitchForm(this, new Đăng_nhập());
         }
 
         private void button2_Click(object sender, EventArgs e)

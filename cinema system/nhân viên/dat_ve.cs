@@ -1,6 +1,4 @@
-﻿using cinema_system.đăng_nhập;
-using rạp_chiếu_phim.khách_hàng;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -34,50 +32,53 @@ namespace cinema_system.nhân_viên
             {
                 con.Open();
 
-                // Lấy danh sách phim
+                // Chỉ lấy phim có suất chiếu trong ngày đã chọn
                 SqlCommand cmd = new SqlCommand(
-                    "SELECT MovieID, MovieName, PosterPath FROM Movies",
-                    con
-                );
+                    @"SELECT m.MovieID, m.MovieName, m.Poster, m.PosterPath
+                      FROM Movies m
+                      WHERE EXISTS (SELECT 1 FROM Showtimes s WHERE s.MovieID = m.MovieID AND s.ShowDate = @date)
+                      ORDER BY m.MovieName", con);
+                cmd.Parameters.Add("@date", SqlDbType.Date).Value = selectedDate.Date;
 
-                List<(int, string, string)> movies = new List<(int, string, string)>();
-
+                List<(int Id, string Name, Image Poster)> movies = new List<(int, string, Image)>();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        int id = Convert.ToInt32(reader["MovieID"]);
-                        string name = reader["MovieName"].ToString();
-                        string poster = reader["PosterPath"].ToString();
-                        movies.Add((id, name, poster));
+                        movies.Add((Convert.ToInt32(reader["MovieID"]),
+                                    reader["MovieName"].ToString(),
+                                    PosterImage.Load(reader["Poster"], reader["PosterPath"])));
                     }
                 }
 
-                // Với mỗi phim, lấy danh sách suất chiếu theo ngày
+                // Với mỗi phim, lấy danh sách suất chiếu theo ngày (kèm phòng chiếu)
                 foreach (var movie in movies)
                 {
                     SqlCommand cmd2 = new SqlCommand(
-                        "SELECT ShowTime FROM Showtimes WHERE MovieID = @id AND ShowDate = @date ORDER BY ShowTime", con);
-
-                    cmd2.Parameters.AddWithValue("@id", movie.Item1);
+                        @"SELECT s.ShowtimeID, s.ShowTime, r.RoomName
+                          FROM Showtimes s LEFT JOIN Rooms r ON s.RoomID = r.RoomID
+                          WHERE s.MovieID = @id AND s.ShowDate = @date
+                          ORDER BY s.ShowTime", con);
+                    cmd2.Parameters.AddWithValue("@id", movie.Id);
                     cmd2.Parameters.Add("@date", SqlDbType.Date).Value = selectedDate.Date;
 
-                    List<TimeSpan> times = new List<TimeSpan>();
+                    List<MovieItem.ShowtimeInfo> showtimes = new List<MovieItem.ShowtimeInfo>();
                     using (SqlDataReader r2 = cmd2.ExecuteReader())
                     {
                         while (r2.Read())
                         {
-                            times.Add(r2.GetTimeSpan(0));
+                            showtimes.Add(new MovieItem.ShowtimeInfo
+                            {
+                                ShowtimeID = r2.GetInt32(0),
+                                Start = selectedDate.Date + r2.GetTimeSpan(1),
+                                RoomName = r2.IsDBNull(2) ? null : r2.GetString(2)
+                            });
                         }
                     }
 
-                    // Phim không có suất chiếu trong ngày thì không hiển thị
-                    if (times.Count == 0)
-                        continue;
-
                     // Tạo item phim hiển thị lên UI
                     MovieItem item = new MovieItem();
-                    item.SetData(movie.Item2, movie.Item3, times); // name, poster, times
+                    item.SetData(movie.Name, movie.Poster, showtimes);
                     flowMovies.Controls.Add(item);
                 }
 
